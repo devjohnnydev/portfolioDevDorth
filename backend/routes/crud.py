@@ -1,16 +1,16 @@
 from fastapi import APIRouter, Depends, HTTPException
 from sqlalchemy.orm import Session
 from typing import List
-from ..database import get_db
-from ..models import Project, Skill, Certification, Experience, Profile
-from ..schemas import (
+from database import get_db
+from models import Project, Skill, Certification, Experience, Profile
+from schemas import (
     Project as ProjectSchema, ProjectCreate,
     Skill as SkillSchema, SkillCreate,
     Certification as CertSchema, CertificationCreate,
     Experience as ExpSchema, ExperienceCreate,
     Profile as ProfileSchema, ProfileCreate
 )
-from ..auth import get_current_active_user
+from auth import get_current_active_user
 
 router = APIRouter()
 

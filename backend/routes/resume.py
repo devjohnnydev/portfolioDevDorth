@@ -1,9 +1,9 @@
 from fastapi import APIRouter, Depends
 from fastapi.responses import StreamingResponse
 from sqlalchemy.orm import Session
-from ..database import get_db
-from ..models import Profile, Experience, Project, Skill
-from ..services.pdf_generator import generate_resume_pdf
+from database import get_db
+from models import Profile, Experience, Project, Skill
+from services.pdf_generator import generate_resume_pdf
 
 router = APIRouter()
 

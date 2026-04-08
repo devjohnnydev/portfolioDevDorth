@@ -2,7 +2,7 @@ import io
 from reportlab.lib.pagesizes import A4
 from reportlab.lib.styles import getSampleStyleSheet, ParagraphStyle
 from reportlab.platypus import SimpleDocTemplate, Paragraph, Spacer
-from ..models import Profile, Experience, Project, Skill
+from models import Profile, Experience, Project, Skill
 
 def generate_resume_pdf(profile, experiences, projects, skills):
     buffer = io.BytesIO()

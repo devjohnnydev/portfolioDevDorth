@@ -1,10 +1,10 @@
 from fastapi import FastAPI, Depends
 from fastapi.middleware.cors import CORSMiddleware
-from .config import CORS_ORIGINS, DEBUG, APP_NAME, ADMIN_EMAIL, ADMIN_PASSWORD
-from .database import engine, Base, SessionLocal
-from .models import User
-from .auth import get_password_hash
-from .routes import auth, crud, resume
+from config import CORS_ORIGINS, DEBUG, APP_NAME, ADMIN_EMAIL, ADMIN_PASSWORD
+from database import engine, Base, SessionLocal
+from models import User
+from auth import get_password_hash
+from routes import auth, crud, resume
 
 # Auto-migrate: create all tables if they don't exist
 Base.metadata.create_all(bind=engine)
