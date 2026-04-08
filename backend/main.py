@@ -48,3 +48,11 @@ app.include_router(crud.router, prefix="/api", tags=["crud"])
 @app.get("/api/health")
 def health_check():
     return {"status": "ok"}
+
+@app.get("/")
+def root():
+    return {
+        "message": "Portfolio API is running",
+        "docs": "/docs",
+        "health": "/api/health"
+    }
