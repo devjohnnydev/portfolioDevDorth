@@ -45,14 +45,14 @@ app.include_router(auth.router, prefix="/api/auth", tags=["auth"])
 app.include_router(resume.router, prefix="/api", tags=["resume"])
 app.include_router(crud.router, prefix="/api", tags=["crud"])
 
+from fastapi.responses import RedirectResponse
+
 @app.get("/api/health")
 def health_check():
     return {"status": "ok"}
 
 @app.get("/")
 def root():
-    return {
-        "message": "Portfolio API is running",
-        "docs": "/docs",
-        "health": "/api/health"
-    }
+    # Redirect to the main frontend URL (the first one defined in CORS origins)
+    frontend_url = CORS_ORIGINS[0] if CORS_ORIGINS else "http://localhost:5173"
+    return RedirectResponse(url=frontend_url)
