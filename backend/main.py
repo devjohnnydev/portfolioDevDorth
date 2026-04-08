@@ -15,7 +15,9 @@ def seed_admin():
     try:
         admin_user = db.query(User).filter(User.email == ADMIN_EMAIL).first()
         if not admin_user:
-            hashed_pw = get_password_hash(ADMIN_PASSWORD)
+            # bcrypt has a 72-byte limit, prevent crashes if the user provides a very long token/password
+            safe_password = ADMIN_PASSWORD[:72]
+            hashed_pw = get_password_hash(safe_password)
             new_admin = User(email=ADMIN_EMAIL, hashed_password=hashed_pw, is_active=True)
             db.add(new_admin)
             db.commit()
