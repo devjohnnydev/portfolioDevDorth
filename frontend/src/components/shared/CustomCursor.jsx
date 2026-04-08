@@ -60,14 +60,14 @@ export default function CustomCursor() {
       <motion.div
         className="fixed top-0 left-0 pointer-events-none z-[9999] mix-blend-difference"
         animate={{
-          x: position.x - 20,
-          y: position.y - 20,
-          scale: isHovering ? 1.5 : isClicking ? 0.8 : 1,
+          x: position.x - 14,
+          y: position.y - 14,
+          scale: isHovering ? 1.4 : isClicking ? 0.8 : 1,
         }}
         transition={{ type: 'spring', stiffness: 300, damping: 20, mass: 0.5 }}
       >
         <div
-          className={`w-10 h-10 rounded-full border-2 transition-colors duration-200 ${
+          className={`w-7 h-7 rounded-full border-2 transition-colors duration-200 ${
             isHovering ? 'border-[var(--color-primary)] bg-[var(--color-primary)]/10' : 'border-[var(--color-text-primary)]/30'
           }`}
         />
@@ -77,13 +77,13 @@ export default function CustomCursor() {
       <motion.div
         className="fixed top-0 left-0 pointer-events-none z-[9999] mix-blend-difference"
         animate={{
-          x: position.x - 3,
-          y: position.y - 3,
+          x: position.x - 2.5,
+          y: position.y - 2.5,
           scale: isClicking ? 2 : 1,
         }}
         transition={{ type: 'spring', stiffness: 500, damping: 25 }}
       >
-        <div className="w-1.5 h-1.5 rounded-full bg-[var(--color-primary)]" />
+        <div className="w-[5px] h-[5px] rounded-full bg-[var(--color-primary)]" />
       </motion.div>
 
       {/* Hide default cursor */}
