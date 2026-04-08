@@ -1,4 +1,4 @@
-const API_BASE = '/api';
+const API_BASE = import.meta.env.VITE_API_URL ? `${import.meta.env.VITE_API_URL}/api` : '/api';
 
 async function request(endpoint, options = {}) {
   const token = localStorage.getItem('admin_token');
@@ -24,11 +24,25 @@ async function request(endpoint, options = {}) {
 
 // Auth
 export const authApi = {
-  login: (email, password) =>
-    request('/auth/login', {
+  login: async (email, password) => {
+    const params = new URLSearchParams();
+    params.append('username', email); // OAuth2 expects 'username' mapping to email
+    params.append('password', password);
+
+    const res = await fetch(`${API_BASE}/auth/login`, {
       method: 'POST',
-      body: JSON.stringify({ email, password }),
-    }),
+      headers: {
+        'Content-Type': 'application/x-www-form-urlencoded',
+      },
+      body: params,
+    });
+
+    if (!res.ok) {
+      const error = await res.json().catch(() => ({ detail: 'Credenciais inválidas' }));
+      throw new Error(error.detail || `HTTP ${res.status}`);
+    }
+    return res.json();
+  },
 };
 
 // Profile
