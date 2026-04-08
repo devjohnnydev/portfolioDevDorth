@@ -1,9 +1,10 @@
-import { useState } from 'react';
-import { motion } from 'framer-motion';
+import { useState, useEffect } from 'react';
+import { motion, AnimatePresence } from 'framer-motion';
 import SectionHeader from '../components/ui/SectionHeader';
 import { fadeInUp, staggerContainer } from '../animations/variants';
+import { skillsApi } from '../services/api';
 
-const skillCategories = [
+const mockSkillCategories = [
   {
     name: 'Frontend',
     color: '#3B82F6',
@@ -106,8 +107,38 @@ function SkillOrb({ skill, index, total, color }) {
 export default function Skills() {
   const [activeTab, setActiveTab] = useState(0);
   const [viewMode, setViewMode] = useState('bars'); // 'bars' | 'orbital'
+  const [dbCategories, setDbCategories] = useState([]);
 
-  const activeCategory = skillCategories[activeTab];
+  useEffect(() => {
+    skillsApi.getAll().then(data => {
+      if (!data || data.length === 0) return;
+      
+      const categoriesMap = {};
+      data.forEach(skill => {
+         const catName = skill.category || 'Outros';
+         if (!categoriesMap[catName]) {
+             categoriesMap[catName] = { name: catName, color: '#3B82F6', skills: [] };
+         }
+         categoriesMap[catName].skills.push({ name: skill.name, level: skill.proficiency });
+      });
+      
+      const colors = ['#3B82F6', '#8B5CF6', '#10B981', '#F59E0B', '#EC4899', '#06B6D4'];
+      const dynamicCats = Object.values(categoriesMap).map((cat, i) => ({
+         ...cat,
+         color: colors[i % colors.length]
+      }));
+      
+      setDbCategories(dynamicCats);
+    }).catch(console.error);
+  }, []);
+
+  const displayCategories = dbCategories.length > 0 ? dbCategories : mockSkillCategories;
+  
+  // Guard against activeTab being out of bounds if categories update
+  const effectiveTab = activeTab >= displayCategories.length ? 0 : activeTab;
+  const activeCategory = displayCategories[effectiveTab];
+
+  if (!activeCategory) return null;
 
   return (
     <section id="skills" className="py-24 relative">
@@ -122,17 +153,17 @@ export default function Skills() {
 
         {/* Category Tabs + View Toggle */}
         <div className="flex flex-col sm:flex-row items-center justify-between gap-4 mb-12">
-          <div className="flex gap-2">
-            {skillCategories.map((cat, i) => (
+          <div className="flex gap-2 flex-wrap">
+            {displayCategories.map((cat, i) => (
               <motion.button
                 key={cat.name}
                 onClick={() => setActiveTab(i)}
                 className={`px-5 py-2.5 rounded-xl text-sm font-medium transition-all duration-300 cursor-pointer ${
-                  activeTab === i
+                  effectiveTab === i
                     ? 'text-white shadow-lg'
                     : 'bg-[var(--color-bg-card)] text-[var(--color-text-secondary)] border border-[var(--color-border)] hover:border-[var(--color-primary)]'
                 }`}
-                style={activeTab === i ? { background: cat.color, boxShadow: `0 4px 15px ${cat.color}40` } : {}}
+                style={effectiveTab === i ? { background: cat.color, boxShadow: `0 4px 15px ${cat.color}40` } : {}}
                 whileHover={{ y: -2 }}
                 whileTap={{ scale: 0.95 }}
               >
@@ -162,47 +193,54 @@ export default function Skills() {
         </div>
 
         {/* Content */}
-        {viewMode === 'bars' ? (
-          <motion.div
-            key={activeTab}
-            className="max-w-2xl mx-auto grid gap-5"
-            variants={staggerContainer}
-            initial="hidden"
-            animate="visible"
-          >
-            {activeCategory.skills.map((skill, i) => (
-              <SkillBar key={skill.name} skill={skill} color={activeCategory.color} delay={i} />
-            ))}
-          </motion.div>
-        ) : (
-          <div className="relative w-[320px] h-[320px] mx-auto">
-            {/* Center */}
+        <AnimatePresence mode="wait">
+          {viewMode === 'bars' ? (
             <motion.div
-              className="absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 w-20 h-20 rounded-full flex items-center justify-center text-white font-bold text-sm shadow-xl z-10"
-              style={{ background: `linear-gradient(135deg, ${activeCategory.color}, ${activeCategory.color}bb)` }}
-              initial={{ scale: 0 }}
-              whileInView={{ scale: 1 }}
-              viewport={{ once: true }}
-              transition={{ duration: 0.5, ease: [0.34, 1.56, 0.64, 1] }}
+              key={`bars-${effectiveTab}`}
+              className="max-w-2xl mx-auto grid gap-5"
+              variants={staggerContainer}
+              initial="hidden"
+              animate="visible"
+              exit={{ opacity: 0 }}
             >
-              {activeCategory.name}
+              {activeCategory.skills.map((skill, i) => (
+                <SkillBar key={skill.name} skill={skill} color={activeCategory.color} delay={i} />
+              ))}
             </motion.div>
+          ) : (
+            <motion.div 
+              key={`orbital-${effectiveTab}`}
+              className="relative w-[320px] h-[320px] mx-auto"
+              exit={{ opacity: 0 }}
+            >
+              {/* Center */}
+              <motion.div
+                className="absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 w-20 h-20 rounded-full flex items-center justify-center text-white font-bold text-sm shadow-xl z-10"
+                style={{ background: `linear-gradient(135deg, ${activeCategory.color}, ${activeCategory.color}bb)` }}
+                initial={{ scale: 0 }}
+                whileInView={{ scale: 1 }}
+                viewport={{ once: true }}
+                transition={{ duration: 0.5, ease: [0.34, 1.56, 0.64, 1] }}
+              >
+                {activeCategory.name}
+              </motion.div>
 
-            {/* Orbit ring */}
-            <div className="absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 w-[260px] h-[260px] rounded-full border border-dashed border-[var(--color-border)]" />
+              {/* Orbit ring */}
+              <div className="absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 w-[260px] h-[260px] rounded-full border border-dashed border-[var(--color-border)] opacity-20" />
 
-            {/* Skill orbs */}
-            {activeCategory.skills.map((skill, i) => (
-              <SkillOrb
-                key={skill.name}
-                skill={skill}
-                index={i}
-                total={activeCategory.skills.length}
-                color={activeCategory.color}
-              />
-            ))}
-          </div>
-        )}
+              {/* Skill orbs */}
+              {activeCategory.skills.map((skill, i) => (
+                <SkillOrb
+                  key={skill.name}
+                  skill={skill}
+                  index={i}
+                  total={activeCategory.skills.length}
+                  color={activeCategory.color}
+                />
+              ))}
+            </motion.div>
+          )}
+        </AnimatePresence>
       </div>
     </section>
   );

@@ -1,8 +1,10 @@
+import { useState, useEffect } from 'react';
 import { motion } from 'framer-motion';
 import { Briefcase, GraduationCap, Award, Code2, TrendingUp, Calendar } from 'lucide-react';
 import SectionHeader from '../components/ui/SectionHeader';
 import { fadeInUp, staggerContainer, slideInLeft, slideInRight } from '../animations/variants';
 import { useAnimatedCounter } from '../hooks';
+import { experiencesApi } from '../services/api';
 
 const stats = [
   { icon: Calendar, value: 3, suffix: '+', label: 'Anos de Experiência' },
@@ -11,7 +13,7 @@ const stats = [
   { icon: Award, value: 5, suffix: '+', label: 'Certificações' },
 ];
 
-const timeline = [
+const mockTimeline = [
   {
     year: '2024 — Presente',
     title: 'Fullstack Developer',
@@ -61,7 +63,8 @@ function StatCard({ icon: Icon, value, suffix, label }) {
 
 function TimelineItem({ item, index }) {
   const isLeft = index % 2 === 0;
-  const Icon = item.icon;
+  // Fallback to Briefcase if there is no icon defined
+  const Icon = item.icon || Briefcase;
 
   return (
     <motion.div
@@ -78,7 +81,7 @@ function TimelineItem({ item, index }) {
         >
           <span className="inline-flex items-center gap-1.5 text-xs font-semibold text-[var(--color-primary)] mb-2">
             <Calendar size={12} />
-            {item.year}
+            {item.period || item.year}
           </span>
           <h4 className="text-lg font-bold text-[var(--color-text-primary)] mb-1">
             {item.title}
@@ -86,7 +89,7 @@ function TimelineItem({ item, index }) {
           <p className="text-sm font-medium text-[var(--color-primary)] mb-2">
             {item.company}
           </p>
-          <p className="text-sm text-[var(--color-text-secondary)] leading-relaxed">
+          <p className="text-sm text-[var(--color-text-secondary)] leading-relaxed whitespace-pre-wrap">
             {item.description}
           </p>
         </motion.div>
@@ -111,6 +114,14 @@ function TimelineItem({ item, index }) {
 }
 
 export default function About() {
+  const [dbExperiences, setDbExperiences] = useState([]);
+
+  useEffect(() => {
+    experiencesApi.getAll().then(data => setDbExperiences(data)).catch(console.error);
+  }, []);
+
+  const timelineList = dbExperiences.length > 0 ? dbExperiences : mockTimeline;
+
   return (
     <section id="about" className="py-24 relative">
       {/* Subtle background decoration */}
@@ -153,7 +164,7 @@ export default function About() {
             whileInView="visible"
             viewport={{ once: true, margin: '-50px' }}
           >
-            {timeline.map((item, i) => (
+            {timelineList.map((item, i) => (
               <TimelineItem key={i} item={item} index={i} />
             ))}
           </motion.div>

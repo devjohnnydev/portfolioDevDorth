@@ -1,9 +1,11 @@
+import { useState, useEffect } from 'react';
 import { motion } from 'framer-motion';
 import { Award, ExternalLink, Calendar, Building2 } from 'lucide-react';
 import SectionHeader from '../components/ui/SectionHeader';
 import { fadeInUp, staggerContainer } from '../animations/variants';
+import { certificationsApi } from '../services/api';
 
-const certificationsData = [
+const mockCertifications = [
   {
     id: 1,
     title: 'Python Full Stack',
@@ -27,22 +29,6 @@ const certificationsData = [
     date: '2023',
     credentialUrl: '#',
     description: 'PostgreSQL, modelagem, queries avançadas, otimização e administração.',
-  },
-  {
-    id: 4,
-    title: 'JavaScript Moderno',
-    institution: 'Bootcamp',
-    date: '2023',
-    credentialUrl: '#',
-    description: 'ES6+, programação assíncrona, closures, prototypes e design patterns.',
-  },
-  {
-    id: 5,
-    title: 'DevOps Fundamentals',
-    institution: 'Plataforma Online',
-    date: '2024',
-    credentialUrl: '#',
-    description: 'Docker, CI/CD, Linux, deploy em nuvem e monitoramento.',
   },
 ];
 
@@ -79,10 +65,21 @@ function CertCard({ cert, index }) {
         </span>
       </div>
 
-      <p className="text-sm text-[var(--color-text-secondary)] leading-relaxed mb-4">
+      <p className="text-sm text-[var(--color-text-secondary)] leading-relaxed mb-4 whitespace-pre-wrap">
         {cert.description}
       </p>
 
+      {cert.credential_url && cert.credential_url !== '#' && (
+        <motion.a
+          href={cert.credential_url}
+          target="_blank"
+          rel="noopener noreferrer"
+          className="inline-flex items-center gap-1.5 text-xs font-semibold text-[var(--color-primary)] hover:underline"
+          whileHover={{ x: 3 }}
+        >
+          Ver credencial <ExternalLink size={12} />
+        </motion.a>
+      )}
       {cert.credentialUrl && cert.credentialUrl !== '#' && (
         <motion.a
           href={cert.credentialUrl}
@@ -99,6 +96,14 @@ function CertCard({ cert, index }) {
 }
 
 export default function Certifications() {
+  const [dbCerts, setDbCerts] = useState([]);
+
+  useEffect(() => {
+    certificationsApi.getAll().then(data => setDbCerts(data)).catch(console.error);
+  }, []);
+
+  const displayList = dbCerts.length > 0 ? dbCerts : mockCertifications;
+
   return (
     <section id="certifications" className="py-24 bg-[var(--color-bg-secondary)]">
       <div className="section-container">
@@ -115,7 +120,7 @@ export default function Certifications() {
           whileInView="visible"
           viewport={{ once: true, margin: '-50px' }}
         >
-          {certificationsData.map((cert, i) => (
+          {displayList.map((cert, i) => (
             <CertCard key={cert.id} cert={cert} index={i} />
           ))}
         </motion.div>

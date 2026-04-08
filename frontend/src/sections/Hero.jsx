@@ -1,9 +1,11 @@
+import { useState, useEffect } from 'react';
 import { motion } from 'framer-motion';
 import { ArrowDown, Download, Send, Sparkles } from 'lucide-react';
 import { useTypewriter } from '../hooks';
 import Button from '../components/ui/Button';
 import ParticleBackground from '../components/three/ParticleBackground';
 import { heroTextVariants, staggerContainer } from '../animations/variants';
+import { profileApi } from '../services/api';
 
 const headlines = [
   'Construindo sistemas que escalam ideias',
@@ -14,6 +16,13 @@ const headlines = [
 
 export default function Hero() {
   const typedText = useTypewriter(headlines, 70, 40, 2500);
+  const [profile, setProfile] = useState(null);
+
+  useEffect(() => {
+    profileApi.get().then(data => {
+      if (data) setProfile(data);
+    }).catch(console.error);
+  }, []);
 
   const scrollToProjects = () => {
     document.querySelector('#projects')?.scrollIntoView({ behavior: 'smooth' });
@@ -22,6 +31,13 @@ export default function Hero() {
   const scrollToContact = () => {
     document.querySelector('#contact')?.scrollIntoView({ behavior: 'smooth' });
   };
+
+  // Determine display values
+  const displayName = profile?.name || 'Carlos Eduardo';
+  const nameParts = displayName.split(' ');
+  const firstName = nameParts[0];
+  const lastName = nameParts.length > 1 ? nameParts.slice(1).join(' ') : '';
+  const displayTitle = profile?.title || 'Fullstack Developer | Systems & Scalable Solutions';
 
   return (
     <section
@@ -62,18 +78,18 @@ export default function Hero() {
           custom={1}
           className="text-5xl sm:text-6xl md:text-7xl lg:text-8xl font-extrabold tracking-tight mb-6"
         >
-          <span className="text-[var(--color-text-primary)]">Carlos </span>
-          <span className="gradient-text">Eduardo</span>
+          <span className="text-[var(--color-text-primary)]">{firstName} </span>
+          {lastName && <span className="gradient-text">{lastName}</span>}
         </motion.h1>
 
         {/* Title */}
         <motion.p
           variants={heroTextVariants}
           custom={2}
-          className="text-lg sm:text-xl md:text-2xl text-[var(--color-text-secondary)] font-medium mb-4 flex items-center justify-center gap-2"
+          className="text-lg sm:text-xl md:text-2xl text-[var(--color-text-secondary)] font-medium mb-4 flex items-center justify-center gap-2 flex-wrap"
         >
-          <Sparkles size={20} className="text-[var(--color-primary)]" />
-          Fullstack Developer | Systems & Scalable Solutions
+          <Sparkles size={20} className="text-[var(--color-primary)] flex-shrink-0" />
+          {displayTitle}
         </motion.p>
 
         {/* Typewriter */}
@@ -83,8 +99,8 @@ export default function Hero() {
           className="h-12 flex items-center justify-center mb-10"
         >
           <p className="text-base sm:text-lg text-[var(--color-text-tertiary)] font-mono">
-            {'> '}{typedText}
-            <span className="inline-block w-0.5 h-5 bg-[var(--color-primary)] ml-1 animate-pulse" />
+            {'> '}{profile?.bio || typedText}
+            <span className="inline-block w-0.5 h-5 bg-[var(--color-primary)] ml-1 animate-pulse align-middle" />
           </p>
         </motion.div>
 

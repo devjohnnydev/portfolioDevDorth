@@ -181,6 +181,88 @@ function OverviewPanel({ counts }) {
 }
 
 /* ========================================
+   Profile Editor Panel
+   ======================================== */
+function ProfileEditor() {
+  const [profile, setProfile] = useState({});
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    loadProfile();
+  }, []);
+
+  const loadProfile = async () => {
+    try {
+      const data = await profileApi.get();
+      setProfile(data || { name: '', title: '', bio: '', email: '', location: '' });
+    } catch (e) {
+      console.error(e);
+      setProfile({ name: '', title: '', bio: '', email: '', location: '' });
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const handleSave = async () => {
+    try {
+      await profileApi.update({
+        name: profile.name || '',
+        title: profile.title || '',
+        bio: profile.bio || '',
+        email: profile.email || '',
+        location: profile.location || '',
+      });
+      alert('Perfil salvo com sucesso!');
+    } catch (e) {
+      alert('Erro ao salvar perfil.');
+    }
+  };
+
+  if (loading) return <div className="p-8 text-center text-[var(--color-text-tertiary)]">Carregando...</div>;
+
+  return (
+    <div>
+      <h2 className="text-xl font-bold mb-6">Editar Perfil</h2>
+      <div className="card p-6 space-y-4 max-w-2xl">
+        <div>
+          <label className="block text-sm font-medium text-[var(--color-text-primary)] mb-1.5">Nome Completo</label>
+          <input
+            type="text"
+            value={profile.name || ''}
+            onChange={(e) => setProfile(p => ({ ...p, name: e.target.value }))}
+            className="w-full px-3 py-2 rounded-lg bg-[var(--color-bg-secondary)] border border-[var(--color-border)] text-sm outline-none focus:border-[var(--color-primary)]"
+            placeholder="Ex: Carlos Eduardo"
+          />
+        </div>
+        <div>
+          <label className="block text-sm font-medium text-[var(--color-text-primary)] mb-1.5">Título / Cargo</label>
+          <input
+            type="text"
+            value={profile.title || ''}
+            onChange={(e) => setProfile(p => ({ ...p, title: e.target.value }))}
+            className="w-full px-3 py-2 rounded-lg bg-[var(--color-bg-secondary)] border border-[var(--color-border)] text-sm outline-none focus:border-[var(--color-primary)]"
+            placeholder="Ex: Fullstack Developer | Systems & Scalable Solutions"
+          />
+        </div>
+        <div>
+          <label className="block text-sm font-medium text-[var(--color-text-primary)] mb-1.5">Bio Curta (Sobre Mim)</label>
+          <textarea
+            value={profile.bio || ''}
+            onChange={(e) => setProfile(p => ({ ...p, bio: e.target.value }))}
+            rows={4}
+            className="w-full px-3 py-2 rounded-lg bg-[var(--color-bg-secondary)] border border-[var(--color-border)] text-sm outline-none focus:border-[var(--color-primary)] resize-none"
+            placeholder="Ex: Transformando ideias em código..."
+          />
+        </div>
+        <div className="pt-4 flex justify-end">
+          <Button variant="primary" onClick={handleSave} icon={Save}>Salvar Perfil</Button>
+        </div>
+      </div>
+    </div>
+  );
+}
+
+/* ========================================
    Main Admin Dashboard
    ======================================== */
 export default function AdminDashboard() {
@@ -329,12 +411,7 @@ export default function AdminDashboard() {
         return <CrudPanel title="Experiências" items={experiences} fields={expFields} onSave={handleSaveExp} onDelete={handleDeleteExp} />;
       case 'profile':
         return (
-          <div>
-            <h2 className="text-xl font-bold mb-6">Perfil</h2>
-            <p className="text-[var(--color-text-tertiary)]">
-              Edição de perfil disponível após conectar a API.
-            </p>
-          </div>
+          <ProfileEditor />
         );
       default:
         return null;

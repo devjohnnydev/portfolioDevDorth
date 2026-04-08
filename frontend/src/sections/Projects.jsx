@@ -1,6 +1,7 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { ExternalLink, Eye, X, ChevronRight, Layers } from 'lucide-react';
+import { projectsApi } from '../services/api';
 
 const Github = ({ size = 20, className = "" }) => (
   <svg xmlns="http://www.w3.org/2000/svg" width={size} height={size} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className={className}><path d="M15 22v-4a4.8 4.8 0 0 0-1-3.02c3.12-.34 6.4-1.51 6.4-6.9a5.4 5.4 0 0 0-1.5-3.89C18.8 3.5 18 2 18 2s-1.3-.4-3.5 1.1a12.3 12.3 0 0 0-6 0C6.3 1.6 5 2 5 2s-.8 1.5-.1 2.1A5.4 5.4 0 0 0 3.4 8c0 5.39 3.28 6.56 6.4 6.9a4.8 4.8 0 0 0-1 3.02V22"/><path d="M9 20c-4.3 1.4-5.3-2-8-2"/></svg>
@@ -10,9 +11,7 @@ import Button from '../components/ui/Button';
 import Modal from '../components/ui/Modal';
 import { fadeInUp, staggerContainer } from '../animations/variants';
 
-const categories = ['Todos', 'Fullstack', 'Frontend', 'Backend', 'Mobile'];
-
-const projectsData = [
+const mockProjects = [
   {
     id: 1,
     title: 'Sistema de Gestão Clínica',
@@ -52,45 +51,6 @@ const projectsData = [
     featured: false,
     highlights: ['Gráficos interativos', 'Exportação PDF/Excel', 'Dados em tempo real'],
   },
-  {
-    id: 4,
-    title: 'API REST Escalável',
-    description: 'API backend com autenticação JWT, RBAC e documentação automatizada.',
-    longDescription: 'API REST de alta performance construída com FastAPI, sistema de autenticação JWT com refresh tokens, controle de acesso granular RBAC, documentação OpenAPI automática e pipeline CI/CD completo.',
-    image: null,
-    category: 'Backend',
-    tech: ['FastAPI', 'PostgreSQL', 'Docker', 'Redis'],
-    github: '#',
-    demo: '#',
-    featured: false,
-    highlights: ['JWT + Refresh Tokens', 'Rate limiting', 'Documentação automática'],
-  },
-  {
-    id: 5,
-    title: 'Portfolio Premium',
-    description: 'Este portfólio que você está vendo agora — feito com React, Three.js e FastAPI.',
-    longDescription: 'Portfólio de nível SaaS com backgrounds 3D interativos via Three.js, animações cinematográficas com Framer Motion, sistema admin completo, gerador de currículo PDF e design premium com light/dark mode.',
-    image: null,
-    category: 'Fullstack',
-    tech: ['React', 'Three.js', 'FastAPI', 'Framer Motion'],
-    github: '#',
-    demo: '#',
-    featured: true,
-    highlights: ['Three.js 3D backgrounds', 'Gerador de currículo', 'Painel admin', 'Cursor interativo'],
-  },
-  {
-    id: 6,
-    title: 'Chat Real-Time',
-    description: 'Aplicação de chat em tempo real com salas, notificações e envio de arquivos.',
-    longDescription: 'Sistema de mensagens instantâneas com WebSockets, suporte a múltiplas salas, indicador de digitação, envio de arquivos e imagens, notificações push e interface responsiva.',
-    image: null,
-    category: 'Fullstack',
-    tech: ['React', 'Socket.io', 'Node.js', 'MongoDB'],
-    github: '#',
-    demo: '#',
-    featured: false,
-    highlights: ['WebSockets em tempo real', 'Envio de mídia', 'Notificações push'],
-  },
 ];
 
 function ProjectCard({ project, onClick }) {
@@ -120,13 +80,13 @@ function ProjectCard({ project, onClick }) {
         <div className="absolute inset-0 bg-black/10 group-hover:bg-black/0 transition-colors duration-500" />
         
         {/* Floating tech icons */}
-        <div className="absolute bottom-3 left-3 flex gap-1.5">
-          {project.tech.slice(0, 3).map((t) => (
+        <div className="absolute bottom-3 left-3 flex gap-1.5 flex-wrap">
+          {project.tech?.slice(0, 3).map((t) => (
             <span key={t} className="px-2 py-0.5 rounded-md bg-white/20 backdrop-blur-sm text-white text-xs font-medium">
               {t}
             </span>
           ))}
-          {project.tech.length > 3 && (
+          {project.tech?.length > 3 && (
             <span className="px-2 py-0.5 rounded-md bg-white/20 backdrop-blur-sm text-white text-xs font-medium">
               +{project.tech.length - 3}
             </span>
@@ -166,48 +126,45 @@ function ProjectModal({ project, onClose }) {
 
   return (
     <Modal isOpen={!!project} onClose={onClose} title={project.title} size="lg">
-      {/* Category badge */}
       <span className="badge mb-4">{project.category}</span>
 
-      {/* Description */}
-      <p className="text-[var(--color-text-secondary)] leading-relaxed mb-6">
+      <p className="text-[var(--color-text-secondary)] leading-relaxed mb-6 whitespace-pre-wrap">
         {project.longDescription}
       </p>
 
-      {/* Highlights */}
-      {project.highlights && (
+      {project.highlights?.length > 0 && typeof project.highlights[0] === 'string' && (
         <div className="mb-6">
           <h4 className="text-sm font-semibold text-[var(--color-text-primary)] mb-3">Destaques</h4>
           <div className="grid grid-cols-2 gap-2">
             {project.highlights.map((h) => (
               <div key={h} className="flex items-center gap-2 text-sm text-[var(--color-text-secondary)]">
-                <div className="w-1.5 h-1.5 rounded-full bg-[var(--color-primary)]" />
-                {h}
+                <div className="w-1.5 h-1.5 rounded-full bg-[var(--color-primary)] flex-shrink-0" />
+                <span>{h}</span>
               </div>
             ))}
           </div>
         </div>
       )}
 
-      {/* Tech Stack */}
-      <div className="mb-6">
-        <h4 className="text-sm font-semibold text-[var(--color-text-primary)] mb-3">Stack Tecnológica</h4>
-        <div className="flex flex-wrap gap-2">
-          {project.tech.map((t) => (
-            <span key={t} className="badge">{t}</span>
-          ))}
+      {project.tech?.length > 0 && (
+        <div className="mb-6">
+          <h4 className="text-sm font-semibold text-[var(--color-text-primary)] mb-3">Stack Tecnológica</h4>
+          <div className="flex flex-wrap gap-2">
+            {project.tech.map((t) => (
+              <span key={t} className="badge">{t}</span>
+            ))}
+          </div>
         </div>
-      </div>
+      )}
 
-      {/* Actions */}
       <div className="flex gap-3 pt-4 border-t border-[var(--color-border)]">
         {project.github && project.github !== '#' && (
-          <Button variant="secondary" icon={Github} href={project.github} size="sm">
+          <Button variant="secondary" icon={Github} href={project.github} target="_blank" size="sm">
             Código Fonte
           </Button>
         )}
         {project.demo && project.demo !== '#' && (
-          <Button variant="primary" icon={ExternalLink} href={project.demo} size="sm">
+          <Button variant="primary" icon={ExternalLink} href={project.demo} target="_blank" size="sm">
             Ver Demo
           </Button>
         )}
@@ -219,10 +176,28 @@ function ProjectModal({ project, onClose }) {
 export default function Projects() {
   const [activeCategory, setActiveCategory] = useState('Todos');
   const [selectedProject, setSelectedProject] = useState(null);
+  const [dbProjects, setDbProjects] = useState([]);
+
+  useEffect(() => {
+    projectsApi.getAll().then(data => {
+      const formatted = data.map(p => ({
+        ...p,
+        longDescription: p.long_description || p.description,
+        tech: p.tech ? p.tech.split(',').map(t => t.trim()) : [],
+        github: p.github_url || '#',
+        demo: p.demo_url || '#',
+        highlights: p.highlights || [],
+      }));
+      setDbProjects(formatted);
+    }).catch(console.error);
+  }, []);
+
+  const displayList = dbProjects.length > 0 ? dbProjects : mockProjects;
+  const dynamicCategories = ['Todos', ...new Set(displayList.map(p => p.category))];
 
   const filtered = activeCategory === 'Todos'
-    ? projectsData
-    : projectsData.filter((p) => p.category === activeCategory);
+    ? displayList
+    : displayList.filter((p) => p.category === activeCategory);
 
   return (
     <section id="projects" className="py-24 bg-[var(--color-bg-secondary)] relative">
@@ -240,7 +215,7 @@ export default function Projects() {
           whileInView={{ opacity: 1, y: 0 }}
           viewport={{ once: true }}
         >
-          {categories.map((cat) => (
+          {dynamicCategories.map((cat) => (
             <motion.button
               key={cat}
               onClick={() => setActiveCategory(cat)}
