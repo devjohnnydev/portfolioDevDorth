@@ -1,21 +1,24 @@
-import { useEffect, useState } from 'react';
-import { motion } from 'framer-motion';
+import { useEffect, useRef, useState } from 'react';
 
 export default function CustomCursor() {
-  const [position, setPosition] = useState({ x: 0, y: 0 });
+  const cursorRef = useRef(null);
+  const dotRef = useRef(null);
   const [isHovering, setIsHovering] = useState(false);
   const [isClicking, setIsClicking] = useState(false);
   const [isVisible, setIsVisible] = useState(false);
 
   useEffect(() => {
-    // Only show on non-touch devices
     const isTouchDevice = 'ontouchstart' in window;
     if (isTouchDevice) return;
 
     setIsVisible(true);
 
     const handleMouseMove = (e) => {
-      setPosition({ x: e.clientX, y: e.clientY });
+      // Direct DOM mutation prevents React re-render lag (teleports)
+      if (cursorRef.current && dotRef.current) {
+        cursorRef.current.style.transform = `translate3d(${e.clientX - 14}px, ${e.clientY - 14}px, 0)`;
+        dotRef.current.style.transform = `translate3d(${e.clientX - 2.5}px, ${e.clientY - 2.5}px, 0)`;
+      }
     };
 
     const handleMouseDown = () => setIsClicking(true);
@@ -57,34 +60,34 @@ export default function CustomCursor() {
   return (
     <>
       {/* Outer ring */}
-      <motion.div
-        className="fixed top-0 left-0 pointer-events-none z-[9999] mix-blend-difference"
-        animate={{
-          x: position.x - 14,
-          y: position.y - 14,
-          scale: isHovering ? 1.4 : isClicking ? 0.8 : 1,
+      <div
+        ref={cursorRef}
+        className="fixed top-0 left-0 pointer-events-none z-[9999] mix-blend-difference transition-transform duration-75 ease-out"
+        style={{
+          transform: `translate3d(-100px, -100px, 0)`,
         }}
-        transition={{ type: 'spring', stiffness: 300, damping: 20, mass: 0.5 }}
       >
         <div
-          className={`w-7 h-7 rounded-full border-2 transition-colors duration-200 ${
+          style={{ transform: `scale(${isHovering ? 1.4 : isClicking ? 0.8 : 1})` }}
+          className={`w-7 h-7 rounded-full border-2 transition-all duration-200 ${
             isHovering ? 'border-[var(--color-primary)] bg-[var(--color-primary)]/10' : 'border-[var(--color-text-primary)]/30'
           }`}
         />
-      </motion.div>
+      </div>
 
       {/* Inner dot */}
-      <motion.div
+      <div
+        ref={dotRef}
         className="fixed top-0 left-0 pointer-events-none z-[9999] mix-blend-difference"
-        animate={{
-          x: position.x - 2.5,
-          y: position.y - 2.5,
-          scale: isClicking ? 2 : 1,
+        style={{
+          transform: `translate3d(-100px, -100px, 0)`,
         }}
-        transition={{ type: 'spring', stiffness: 500, damping: 25 }}
       >
-        <div className="w-[5px] h-[5px] rounded-full bg-[var(--color-primary)]" />
-      </motion.div>
+        <div 
+          style={{ transform: `scale(${isClicking ? 2 : 1})` }}
+          className="w-[5px] h-[5px] rounded-full bg-[var(--color-primary)] transition-transform duration-200" 
+        />
+      </div>
 
       {/* Hide default cursor */}
       <style>{`* { cursor: none !important; }`}</style>
