@@ -1,8 +1,8 @@
 import { motion } from 'framer-motion';
 import { Briefcase, GraduationCap, Award, Code2, TrendingUp, Calendar } from 'lucide-react';
-import SectionHeader from '../ui/SectionHeader';
-import { fadeInUp, staggerContainer, slideInLeft, slideInRight } from '../../animations/variants';
-import { useAnimatedCounter } from '../../hooks';
+import SectionHeader from '../components/ui/SectionHeader';
+import { fadeInUp, staggerContainer, slideInLeft, slideInRight } from '../animations/variants';
+import { useAnimatedCounter } from '../hooks';
 
 const stats = [
   { icon: Calendar, value: 3, suffix: '+', label: 'Anos de Experiência' },

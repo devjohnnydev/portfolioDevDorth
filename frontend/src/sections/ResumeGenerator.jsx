@@ -1,9 +1,9 @@
 import { useState } from 'react';
 import { motion } from 'framer-motion';
 import { Download, FileText, Sparkles, CheckCircle, Loader2 } from 'lucide-react';
-import SectionHeader from '../ui/SectionHeader';
-import Button from '../ui/Button';
-import { fadeInUp } from '../../animations/variants';
+import SectionHeader from '../components/ui/SectionHeader';
+import Button from '../components/ui/Button';
+import { fadeInUp } from '../animations/variants';
 
 export default function ResumeGenerator() {
   const [isGenerating, setIsGenerating] = useState(false);

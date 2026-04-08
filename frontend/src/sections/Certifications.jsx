@@ -1,7 +1,7 @@
 import { motion } from 'framer-motion';
 import { Award, ExternalLink, Calendar, Building2 } from 'lucide-react';
-import SectionHeader from '../ui/SectionHeader';
-import { fadeInUp, staggerContainer } from '../../animations/variants';
+import SectionHeader from '../components/ui/SectionHeader';
+import { fadeInUp, staggerContainer } from '../animations/variants';
 
 const certificationsData = [
   {

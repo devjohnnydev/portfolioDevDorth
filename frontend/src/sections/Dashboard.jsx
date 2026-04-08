@@ -1,8 +1,8 @@
 import { motion } from 'framer-motion';
 import { BarChart3, Code2, Briefcase, TrendingUp, Zap, Globe } from 'lucide-react';
-import SectionHeader from '../ui/SectionHeader';
-import { fadeInUp, staggerContainer } from '../../animations/variants';
-import { useAnimatedCounter } from '../../hooks';
+import SectionHeader from '../components/ui/SectionHeader';
+import { fadeInUp, staggerContainer } from '../animations/variants';
+import { useAnimatedCounter } from '../hooks';
 
 const metrics = [
   { icon: Code2, value: 15000, suffix: '+', label: 'Linhas de Código', color: '#3B82F6' },

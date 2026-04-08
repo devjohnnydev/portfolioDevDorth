@@ -1,10 +1,14 @@
 import { useState } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { ExternalLink, Github, Eye, X, ChevronRight, Layers } from 'lucide-react';
-import SectionHeader from '../ui/SectionHeader';
-import Button from '../ui/Button';
-import Modal from '../ui/Modal';
-import { fadeInUp, staggerContainer } from '../../animations/variants';
+import { ExternalLink, Eye, X, ChevronRight, Layers } from 'lucide-react';
+
+const Github = ({ size = 20, className = "" }) => (
+  <svg xmlns="http://www.w3.org/2000/svg" width={size} height={size} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className={className}><path d="M15 22v-4a4.8 4.8 0 0 0-1-3.02c3.12-.34 6.4-1.51 6.4-6.9a5.4 5.4 0 0 0-1.5-3.89C18.8 3.5 18 2 18 2s-1.3-.4-3.5 1.1a12.3 12.3 0 0 0-6 0C6.3 1.6 5 2 5 2s-.8 1.5-.1 2.1A5.4 5.4 0 0 0 3.4 8c0 5.39 3.28 6.56 6.4 6.9a4.8 4.8 0 0 0-1 3.02V22"/><path d="M9 20c-4.3 1.4-5.3-2-8-2"/></svg>
+);
+import SectionHeader from '../components/ui/SectionHeader';
+import Button from '../components/ui/Button';
+import Modal from '../components/ui/Modal';
+import { fadeInUp, staggerContainer } from '../animations/variants';
 
 const categories = ['Todos', 'Fullstack', 'Frontend', 'Backend', 'Mobile'];
 

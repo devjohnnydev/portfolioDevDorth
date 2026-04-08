@@ -1,7 +1,7 @@
 import { useState } from 'react';
 import { motion } from 'framer-motion';
-import SectionHeader from '../ui/SectionHeader';
-import { fadeInUp, staggerContainer } from '../../animations/variants';
+import SectionHeader from '../components/ui/SectionHeader';
+import { fadeInUp, staggerContainer } from '../animations/variants';
 
 const skillCategories = [
   {

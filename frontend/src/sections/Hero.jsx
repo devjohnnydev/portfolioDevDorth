@@ -1,9 +1,9 @@
 import { motion } from 'framer-motion';
 import { ArrowDown, Download, Send, Sparkles } from 'lucide-react';
-import { useTypewriter } from '../../hooks';
-import Button from '../ui/Button';
-import ParticleBackground from '../three/ParticleBackground';
-import { heroTextVariants, staggerContainer } from '../../animations/variants';
+import { useTypewriter } from '../hooks';
+import Button from '../components/ui/Button';
+import ParticleBackground from '../components/three/ParticleBackground';
+import { heroTextVariants, staggerContainer } from '../animations/variants';
 
 const headlines = [
   'Construindo sistemas que escalam ideias',
