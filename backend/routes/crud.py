@@ -1,8 +1,8 @@
-from fastapi import APIRouter, Depends, HTTPException
+from fastapi import APIRouter, Depends, HTTPException, UploadFile, File, Response
 from sqlalchemy.orm import Session
 from typing import List
 from database import get_db
-from models import Project, Skill, Certification, Experience, Profile
+from models import Project, Skill, Certification, Experience, Profile, DbFile
 from schemas import (
     Project as ProjectSchema, ProjectCreate,
     Skill as SkillSchema, SkillCreate,
@@ -167,3 +167,24 @@ def update_profile(profile_data: ProfileCreate, db: Session = Depends(get_db), c
     db.commit()
     db.refresh(db_profile)
     return db_profile
+
+# --- Files ---
+@router.post("/files/upload")
+def upload_file(file: UploadFile = File(...), db: Session = Depends(get_db)):
+    content = file.file.read()
+    db_file = DbFile(
+        filename=file.filename,
+        content_type=file.content_type,
+        data=content
+    )
+    db.add(db_file)
+    db.commit()
+    db.refresh(db_file)
+    return {"id": db_file.id, "url": f"/api/files/{db_file.id}"}
+
+@router.get("/files/{file_id}")
+def get_file(file_id: int, db: Session = Depends(get_db)):
+    db_file = db.query(DbFile).filter(DbFile.id == file_id).first()
+    if not db_file:
+        raise HTTPException(status_code=404, detail="File not found")
+    return Response(content=db_file.data, media_type=db_file.content_type)

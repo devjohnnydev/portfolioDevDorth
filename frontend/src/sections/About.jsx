@@ -4,7 +4,8 @@ import { Briefcase, GraduationCap, Award, Code2, TrendingUp, Calendar } from 'lu
 import SectionHeader from '../components/ui/SectionHeader';
 import { fadeInUp, staggerContainer, slideInLeft, slideInRight } from '../animations/variants';
 import { useAnimatedCounter } from '../hooks';
-import { experiencesApi } from '../services/api';
+import { useAnimatedCounter } from '../hooks';
+import { experiencesApi, profileApi } from '../services/api';
 
 const stats = [
   { icon: Calendar, value: 3, suffix: '+', label: 'Anos de Experiência' },
@@ -41,7 +42,15 @@ const mockTimeline = [
 ];
 
 function StatCard({ icon: Icon, value, suffix, label }) {
-  const [ref, count] = useAnimatedCounter(value, 2000);
+  // If value is string (from db like '20+'), don't use animated counter
+  const isString = typeof value === 'string';
+  const displayValue = isString ? value.replace(/[^0-9]/g, '') : value;
+  const displaySuffix = isString ? value.replace(/[0-9]/g, '') : (suffix || '');
+
+  const [ref, count] = useAnimatedCounter(parseInt(displayValue) || 0, 2000);
+
+  // Fallback to Award icon
+  const SafeIcon = Icon || Award;
 
   return (
     <motion.div
@@ -51,10 +60,10 @@ function StatCard({ icon: Icon, value, suffix, label }) {
     >
       <div className="w-12 h-12 mx-auto mb-4 rounded-xl bg-[var(--color-primary-soft)]
         flex items-center justify-center group-hover:bg-[var(--color-primary)] transition-colors duration-300">
-        <Icon size={22} className="text-[var(--color-primary)] group-hover:text-white transition-colors duration-300" />
+        <SafeIcon size={22} className="text-[var(--color-primary)] group-hover:text-white transition-colors duration-300" />
       </div>
       <p className="text-3xl font-bold text-[var(--color-text-primary)] mb-1">
-        {count}{suffix}
+        {count}{displaySuffix}
       </p>
       <p className="text-sm text-[var(--color-text-tertiary)]">{label}</p>
     </motion.div>
@@ -114,13 +123,22 @@ function TimelineItem({ item, index }) {
 }
 
 export default function About() {
-  const [dbExperiences, setDbExperiences] = useState([]);
+  const [experiences, setExperiences] = useState([]);
+  const [profile, setProfile] = useState(null);
 
   useEffect(() => {
-    experiencesApi.getAll().then(data => setDbExperiences(data)).catch(console.error);
-  }, []);
+    experiencesApi.getAll().then(data => {
+      if (data && data.length > 0) setExperiences(data);
+      else setExperiences(mockTimeline);
+    }).catch(err => {
+      console.error(err);
+      setExperiences(mockTimeline);
+    });
 
-  const timelineList = dbExperiences.length > 0 ? dbExperiences : mockTimeline;
+    profileApi.get().then(data => {
+      if (data) setProfile(data);
+    }).catch(console.error);
+  }, []);
 
   return (
     <section id="about" className="py-24 relative">
@@ -136,14 +154,11 @@ export default function About() {
 
         {/* Stats Grid */}
         <motion.div
-          className="grid grid-cols-2 md:grid-cols-4 gap-4 mb-20"
           variants={staggerContainer}
-          initial="hidden"
-          whileInView="visible"
-          viewport={{ once: true, margin: '-50px' }}
+          className="grid grid-cols-2 lg:grid-cols-4 gap-4 mb-20"
         >
-          {stats.map((stat) => (
-            <StatCard key={stat.label} {...stat} />
+          {((profile?.stats && profile.stats.length > 0) ? profile.stats : stats).map((stat, index) => (
+            <StatCard key={index} {...stat} />
           ))}
         </motion.div>
 

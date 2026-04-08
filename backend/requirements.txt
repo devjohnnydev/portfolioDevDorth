@@ -8,3 +8,5 @@ pydantic[email]
 uvicorn
 reportlab
 bcrypt==4.0.1
+alembic
+python-multipart

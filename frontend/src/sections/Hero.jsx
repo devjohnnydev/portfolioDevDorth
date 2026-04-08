@@ -134,11 +134,11 @@ export default function Hero() {
           custom={5}
           className="mt-16 grid grid-cols-3 gap-8 max-w-md mx-auto"
         >
-          {[
+          {((profile?.stats && profile.stats.length > 0) ? profile.stats : [
             { value: '3+', label: 'Anos de exp.' },
             { value: '20+', label: 'Projetos' },
             { value: '10+', label: 'Tecnologias' },
-          ].map((stat) => (
+          ]).map((stat, i) => (
             <div key={stat.label} className="text-center">
               <p className="text-2xl sm:text-3xl font-bold gradient-text">{stat.value}</p>
               <p className="text-xs text-[var(--color-text-tertiary)] mt-1">{stat.label}</p>

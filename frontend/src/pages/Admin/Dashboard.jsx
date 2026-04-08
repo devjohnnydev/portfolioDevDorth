@@ -8,7 +8,7 @@ import {
 import { useAdminStore } from '../../stores';
 import Button from '../../components/ui/Button';
 import Modal from '../../components/ui/Modal';
-import { projectsApi, skillsApi, certificationsApi, experiencesApi, profileApi } from '../../services/api';
+import { projectsApi, skillsApi, certificationsApi, experiencesApi, profileApi, uploadApi } from '../../services/api';
 
 const tabs = [
   { id: 'overview', label: 'Visão Geral', icon: LayoutDashboard },
@@ -114,6 +114,27 @@ function CrudPanel({ title, items, fields, onSave, onDelete, loading }) {
                   className="w-full px-3 py-2 rounded-lg bg-[var(--color-bg-secondary)] border border-[var(--color-border)]
                     text-[var(--color-text-primary)] text-sm outline-none focus:border-[var(--color-primary)] resize-none transition-colors"
                 />
+              ) : field.type === 'file' ? (
+                <div>
+                  {formData[field.key] && typeof formData[field.key] === 'string' && (
+                    <img src={formData[field.key].startsWith('/api') ? `${import.meta.env.VITE_API_URL || ''}${formData[field.key]}` : formData[field.key]} className="h-20 w-20 object-cover rounded mb-2" alt="Preview"/>
+                  )}
+                  <input
+                    type="file"
+                    accept="image/*"
+                    onChange={async (e) => {
+                      if (e.target.files && e.target.files[0]) {
+                        try {
+                          const res = await uploadApi.file(e.target.files[0]);
+                          setFormData((prev) => ({ ...prev, [field.key]: res.url }));
+                        } catch (err) {
+                           alert('Erro ao subir arquivo');
+                        }
+                      }
+                    }}
+                    className="w-full px-3 py-2 rounded-lg bg-[var(--color-bg-secondary)] border border-[var(--color-border)] text-sm outline-none focus:border-[var(--color-primary)] transition-colors"
+                  />
+                </div>
               ) : field.type === 'number' ? (
                 <input
                   type="number"
@@ -211,6 +232,12 @@ function ProfileEditor() {
         bio: profile.bio || '',
         email: profile.email || '',
         location: profile.location || '',
+        social_links: profile.social_links || { github: '', linkedin: '', twitter: '' },
+        stats: profile.stats || [
+           { label: 'Anos de exp.', value: '3+' },
+           { label: 'Projetos', value: '20+' },
+           { label: 'Tecnologias', value: '10+' }
+        ]
       });
       alert('Perfil salvo com sucesso!');
     } catch (e) {
@@ -254,6 +281,64 @@ function ProfileEditor() {
             placeholder="Ex: Transformando ideias em código..."
           />
         </div>
+
+        {/* Social Links */}
+        <div className="pt-4 border-t border-[var(--color-border)] mt-4">
+          <h3 className="text-lg font-bold text-[var(--color-text-primary)] mb-4">Redes Sociais</h3>
+          <div className="space-y-4">
+             {['github', 'linkedin', 'twitter'].map((network) => (
+               <div key={network}>
+                 <label className="block text-sm font-medium text-[var(--color-text-primary)] mb-1.5 capitalize">{network}</label>
+                 <input
+                   type="text"
+                   value={profile.social_links?.[network] || ''}
+                   onChange={(e) => setProfile(p => ({ ...p, social_links: { ...p.social_links, [network]: e.target.value } }))}
+                   className="w-full px-3 py-2 rounded-lg bg-[var(--color-bg-secondary)] border border-[var(--color-border)] text-sm outline-none focus:border-[var(--color-primary)]"
+                   placeholder={`URL do ${network}`}
+                 />
+               </div>
+             ))}
+          </div>
+        </div>
+
+        {/* Stats */}
+        <div className="pt-4 border-t border-[var(--color-border)] mt-4">
+          <h3 className="text-lg font-bold text-[var(--color-text-primary)] mb-4">Métricas & Analytics</h3>
+          <div className="space-y-4">
+             {(profile.stats || []).map((stat, index) => (
+                <div key={index} className="flex gap-2 items-center">
+                  <div className="flex-1">
+                     <label className="block text-xs text-[var(--color-text-tertiary)] mb-1">Valor (Ex: 20+)</label>
+                     <input type="text" value={stat.value || ''}
+                            onChange={(e) => {
+                               const newStats = [...(profile.stats || [])];
+                               newStats[index].value = e.target.value;
+                               setProfile(p => ({ ...p, stats: newStats }));
+                            }}
+                            className="w-full px-3 py-2 rounded-lg bg-[var(--color-bg-secondary)] border border-[var(--color-border)] text-sm" />
+                  </div>
+                  <div className="flex-1">
+                     <label className="block text-xs text-[var(--color-text-tertiary)] mb-1">Rótulo (Ex: Projetos)</label>
+                     <input type="text" value={stat.label || ''}
+                            onChange={(e) => {
+                               const newStats = [...(profile.stats || [])];
+                               newStats[index].label = e.target.value;
+                               setProfile(p => ({ ...p, stats: newStats }));
+                            }}
+                            className="w-full px-3 py-2 rounded-lg bg-[var(--color-bg-secondary)] border border-[var(--color-border)] text-sm" />
+                  </div>
+                  <button type="button" onClick={() => {
+                      const newStats = profile.stats.filter((_, i) => i !== index);
+                      setProfile(p => ({ ...p, stats: newStats }));
+                  }} className="mt-5 p-2 text-[var(--color-error)] hover:bg-[var(--color-error)]/10 rounded-lg cursor-pointer"><Trash2 size={16} /></button>
+                </div>
+             ))}
+             <Button variant="secondary" size="sm" icon={Plus} onClick={() => {
+                 setProfile(p => ({ ...p, stats: [...(p.stats || []), { label: '', value: '' }] }));
+             }}>Adicionar Métrica</Button>
+          </div>
+        </div>
+
         <div className="pt-4 flex justify-end">
           <Button variant="primary" onClick={handleSave} icon={Save}>Salvar Perfil</Button>
         </div>
@@ -362,6 +447,7 @@ export default function AdminDashboard() {
     { key: 'description', label: 'Descrição curta', type: 'text' },
     { key: 'long_description', label: 'Descrição completa', type: 'textarea' },
     { key: 'category', label: 'Categoria', type: 'text' },
+    { key: 'image_url', label: 'Imagem de Destaque', type: 'file' },
     { key: 'tech', label: 'Tecnologias (separadas por vírgula)', type: 'text' },
     { key: 'github_url', label: 'GitHub URL', type: 'text' },
     { key: 'demo_url', label: 'Demo URL', type: 'text' },

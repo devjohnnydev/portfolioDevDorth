@@ -119,11 +119,11 @@ export const statsApi = {
 
 // Upload
 export const uploadApi = {
-  image: async (file) => {
+  file: async (file) => {
     const formData = new FormData();
     formData.append('file', file);
     const token = localStorage.getItem('admin_token');
-    const res = await fetch(`${API_BASE}/upload`, {
+    const res = await fetch(`${API_BASE}/files/upload`, {
       method: 'POST',
       headers: { ...(token && { Authorization: `Bearer ${token}` }) },
       body: formData,

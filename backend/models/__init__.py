@@ -22,7 +22,20 @@ class Profile(Base):
     email = Column(String, nullable=True)
     location = Column(String, nullable=True)
     social_links = Column(JSON, nullable=True) # e.g. {"github": "url", "linkedin": "url"}
+    stats = Column(JSON, nullable=True) # e.g. [{"label": "Anos de exp.", "value": "3+"}, ...]
     updated_at = Column(TIMESTAMP(timezone=True), onupdate=func.now())
+
+from sqlalchemy import LargeBinary
+
+class DbFile(Base):
+    __tablename__ = "files"
+
+    id = Column(Integer, primary_key=True, index=True)
+    filename = Column(String, nullable=False)
+    content_type = Column(String, nullable=False)
+    data = Column(LargeBinary, nullable=False)
+    created_at = Column(TIMESTAMP(timezone=True), server_default=func.now())
+
 
 class Project(Base):
     __tablename__ = "projects"

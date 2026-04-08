@@ -28,6 +28,7 @@ class ProfileBase(BaseModel):
     email: Optional[str] = None
     location: Optional[str] = None
     social_links: Optional[Dict[str, Any]] = None
+    stats: Optional[List[Dict[str, Any]]] = None
 
 class ProfileCreate(ProfileBase):
     pass
