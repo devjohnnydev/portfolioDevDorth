@@ -9,6 +9,7 @@ from typing import Sequence, Union
 
 from alembic import op
 import sqlalchemy as sa
+from sqlalchemy.engine.reflection import Inspector
 
 
 # revision identifiers, used by Alembic.
@@ -20,12 +21,22 @@ depends_on: Union[str, Sequence[str], None] = None
 
 def upgrade() -> None:
     """Add new JSON and text columns to profiles table for dashboard customization."""
-    op.add_column('profiles', sa.Column('dashboard_metrics', sa.JSON(), nullable=True))
-    op.add_column('profiles', sa.Column('dashboard_languages', sa.JSON(), nullable=True))
-    op.add_column('profiles', sa.Column('dashboard_activity', sa.JSON(), nullable=True))
-    op.add_column('profiles', sa.Column('hero_headlines', sa.JSON(), nullable=True))
-    op.add_column('profiles', sa.Column('about_title', sa.String(), nullable=True))
-    op.add_column('profiles', sa.Column('about_subtitle', sa.Text(), nullable=True))
+    conn = op.get_bind()
+    inspector = Inspector.from_engine(conn)
+    columns = [c['name'] for c in inspector.get_columns('profiles')]
+
+    if 'dashboard_metrics' not in columns:
+        op.add_column('profiles', sa.Column('dashboard_metrics', sa.JSON(), nullable=True))
+    if 'dashboard_languages' not in columns:
+        op.add_column('profiles', sa.Column('dashboard_languages', sa.JSON(), nullable=True))
+    if 'dashboard_activity' not in columns:
+        op.add_column('profiles', sa.Column('dashboard_activity', sa.JSON(), nullable=True))
+    if 'hero_headlines' not in columns:
+        op.add_column('profiles', sa.Column('hero_headlines', sa.JSON(), nullable=True))
+    if 'about_title' not in columns:
+        op.add_column('profiles', sa.Column('about_title', sa.String(), nullable=True))
+    if 'about_subtitle' not in columns:
+        op.add_column('profiles', sa.Column('about_subtitle', sa.Text(), nullable=True))
 
 
 def downgrade() -> None:
