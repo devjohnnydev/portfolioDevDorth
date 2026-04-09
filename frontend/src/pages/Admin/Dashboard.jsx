@@ -280,7 +280,7 @@ function ProfileEditor() {
   const loadProfile = async () => {
     try {
       const data = await profileApi.get();
-      setProfile(data || { name: '', title: '', bio: '', email: '', location: '', social_links: {}, stats: [], dashboard_metrics: [], dashboard_languages: [], dashboard_activity: [], hero_headlines: [], about_title: '', about_subtitle: '', resume_config: {} });
+      setProfile(data || { name: '', title: '', bio: '', email: '', location: '', social_links: {}, stats: [], dashboard_metrics: [], dashboard_languages: [], dashboard_activity: [], hero_headlines: [], about_title: '', about_subtitle: '', resume_config: {}, dashboard_section_config: {} });
     } catch (e) {
       console.error(e);
     } finally {
@@ -306,6 +306,7 @@ function ProfileEditor() {
         about_title: profile.about_title || '',
         about_subtitle: profile.about_subtitle || '',
         resume_config: profile.resume_config || {},
+        dashboard_section_config: profile.dashboard_section_config || {},
       });
       alert('Perfil salvo com sucesso!');
     } catch (e) {
@@ -471,6 +472,39 @@ function ProfileEditor() {
           <div>
             <label className="block text-xs font-medium text-[var(--color-text-tertiary)] mb-1.5">Texto do Botão</label>
             <input type="text" value={profile.resume_config?.buttonText || ''} onChange={(e) => setProfile(p => ({ ...p, resume_config: { ...p.resume_config, buttonText: e.target.value } }))} className={inputCls} placeholder="Gerar Currículo PDF" />
+          </div>
+        </div>
+      </AdminSection>
+
+      {/* === DASHBOARD SECTION HEADER === */}
+      <AdminSection title="Dashboard — Cabeçalho da Seção" icon={LayoutDashboard}>
+        <p className="text-xs text-[var(--color-text-tertiary)] mb-3">
+          Configure os textos do cabeçalho e dos cards da seção <strong>Métricas &amp; Analytics</strong> do portfolio.
+        </p>
+        <div className="space-y-4">
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+            <div>
+              <label className="block text-xs font-medium text-[var(--color-text-tertiary)] mb-1.5">Badge (etiqueta)</label>
+              <input type="text" value={profile.dashboard_section_config?.badge || ''} onChange={(e) => setProfile(p => ({ ...p, dashboard_section_config: { ...p.dashboard_section_config, badge: e.target.value } }))} className={inputCls} placeholder="Dashboard" />
+            </div>
+            <div>
+              <label className="block text-xs font-medium text-[var(--color-text-tertiary)] mb-1.5">Título da Seção</label>
+              <input type="text" value={profile.dashboard_section_config?.title || ''} onChange={(e) => setProfile(p => ({ ...p, dashboard_section_config: { ...p.dashboard_section_config, title: e.target.value } }))} className={inputCls} placeholder="Métricas & Analytics" />
+            </div>
+          </div>
+          <div>
+            <label className="block text-xs font-medium text-[var(--color-text-tertiary)] mb-1.5">Subtítulo da Seção</label>
+            <textarea value={profile.dashboard_section_config?.subtitle || ''} onChange={(e) => setProfile(p => ({ ...p, dashboard_section_config: { ...p.dashboard_section_config, subtitle: e.target.value } }))} rows={2} className={`${inputCls} resize-none`} placeholder="Uma visão em tempo real da minha atividade e crescimento como desenvolvedor." />
+          </div>
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+            <div>
+              <label className="block text-xs font-medium text-[var(--color-text-tertiary)] mb-1.5">Título do card de Linguagens</label>
+              <input type="text" value={profile.dashboard_section_config?.languagesTitle || ''} onChange={(e) => setProfile(p => ({ ...p, dashboard_section_config: { ...p.dashboard_section_config, languagesTitle: e.target.value } }))} className={inputCls} placeholder="Distribuição por Linguagem" />
+            </div>
+            <div>
+              <label className="block text-xs font-medium text-[var(--color-text-tertiary)] mb-1.5">Título do card de Atividade</label>
+              <input type="text" value={profile.dashboard_section_config?.activityTitle || ''} onChange={(e) => setProfile(p => ({ ...p, dashboard_section_config: { ...p.dashboard_section_config, activityTitle: e.target.value } }))} className={inputCls} placeholder="Atividade Recente" />
+            </div>
           </div>
         </div>
       </AdminSection>

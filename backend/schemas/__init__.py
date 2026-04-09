@@ -36,6 +36,7 @@ class ProfileBase(BaseModel):
     about_title: Optional[str] = None
     about_subtitle: Optional[str] = None
     resume_config: Optional[dict] = None
+    dashboard_section_config: Optional[dict] = None
 
 class ProfileCreate(ProfileBase):
     pass

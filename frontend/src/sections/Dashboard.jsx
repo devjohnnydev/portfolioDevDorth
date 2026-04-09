@@ -28,6 +28,14 @@ const defaultRecentActivity = [
   { date: '3 dias', action: 'Refactor de API', project: 'API REST' },
 ];
 
+const defaultSectionConfig = {
+  badge: 'Dashboard',
+  title: 'Métricas & Analytics',
+  subtitle: 'Uma visão em tempo real da minha atividade e crescimento como desenvolvedor.',
+  languagesTitle: 'Distribuição por Linguagem',
+  activityTitle: 'Atividade Recente',
+};
+
 const iconMap = { Code2, Briefcase, TrendingUp, Zap };
 
 function MetricCard({ icon, value, suffix, label, color }) {
@@ -92,6 +100,7 @@ export default function Dashboard() {
   const [metrics, setMetrics] = useState(defaultMetrics);
   const [languageStats, setLanguageStats] = useState(defaultLanguageStats);
   const [recentActivity, setRecentActivity] = useState(defaultRecentActivity);
+  const [sectionConfig, setSectionConfig] = useState(defaultSectionConfig);
 
   useEffect(() => {
     profileApi.get().then(data => {
@@ -105,6 +114,9 @@ export default function Dashboard() {
         if (data.dashboard_activity && data.dashboard_activity.length > 0) {
           setRecentActivity(data.dashboard_activity);
         }
+        if (data.dashboard_section_config) {
+          setSectionConfig(prev => ({ ...prev, ...data.dashboard_section_config }));
+        }
       }
     }).catch(console.error);
   }, []);
@@ -115,9 +127,9 @@ export default function Dashboard() {
 
       <div className="section-container">
         <SectionHeader
-          badge="Dashboard"
-          title="Métricas & Analytics"
-          subtitle="Uma visão em tempo real da minha atividade e crescimento como desenvolvedor."
+          badge={sectionConfig.badge}
+          title={sectionConfig.title}
+          subtitle={sectionConfig.subtitle}
         />
 
         {/* Metrics Grid */}
@@ -143,7 +155,7 @@ export default function Dashboard() {
           >
             <div className="flex items-center gap-2 mb-6">
               <BarChart3 size={20} className="text-[var(--color-primary)]" />
-              <h3 className="text-lg font-bold">Distribuição por Linguagem</h3>
+              <h3 className="text-lg font-bold">{sectionConfig.languagesTitle}</h3>
             </div>
             <div className="space-y-4">
               {languageStats.map((lang, i) => (
@@ -162,7 +174,7 @@ export default function Dashboard() {
           >
             <div className="flex items-center gap-2 mb-6">
               <Globe size={20} className="text-[var(--color-primary)]" />
-              <h3 className="text-lg font-bold">Atividade Recente</h3>
+              <h3 className="text-lg font-bold">{sectionConfig.activityTitle}</h3>
             </div>
             <div className="space-y-4">
               {recentActivity.map((activity, i) => (
