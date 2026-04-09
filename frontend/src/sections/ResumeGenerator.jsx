@@ -1,17 +1,20 @@
 import { useState, useEffect } from 'react';
 import { motion } from 'framer-motion';
-import { Download, FileText, Sparkles, CheckCircle, Loader2 } from 'lucide-react';
+import { Download, FileText, Sparkles, CheckCircle, Loader2, AlertCircle } from 'lucide-react';
 import SectionHeader from '../components/ui/SectionHeader';
 import Button from '../components/ui/Button';
 import { fadeInUp } from '../animations/variants';
 import { profileApi } from '../services/api';
 
+const API_BASE = import.meta.env.VITE_API_URL ? `${import.meta.env.VITE_API_URL}/api` : '/api';
+
 export default function ResumeGenerator() {
   const [isGenerating, setIsGenerating] = useState(false);
   const [isGenerated, setIsGenerated] = useState(false);
+  const [error, setError] = useState(null);
   const [texts, setTexts] = useState({
     titleHighlight: 'Currículo',
-    titleNormal: ' Profissional',
+    titleNormal: 'Profissional',
     subtitle: 'Gere automaticamente um currículo completo com todos os meus dados, projetos, skills e experiências em formato PDF profissional.',
     buttonText: 'Gerar Currículo PDF'
   });
@@ -26,29 +29,53 @@ export default function ResumeGenerator() {
 
   const handleGenerate = async () => {
     setIsGenerating(true);
+    setError(null);
     
     try {
-      // Try API first
-      const res = await fetch('/api/resume/generate');
-      if (res.ok) {
-        const blob = await res.blob();
-        const url = URL.createObjectURL(blob);
-        const a = document.createElement('a');
-        a.href = url;
-        a.download = 'Carlos_Eduardo_CV.pdf';
-        a.click();
-        URL.revokeObjectURL(url);
-        setIsGenerated(true);
-      } else {
-        // Fallback — show message
-        setIsGenerated(true);
+      const res = await fetch(`${API_BASE}/resume/generate`);
+      
+      if (!res.ok) {
+        const errorText = await res.text().catch(() => '');
+        console.error('PDF generation failed:', res.status, errorText);
+        setError('Erro ao gerar o PDF. Tente novamente.');
+        return;
       }
-    } catch {
-      // API not available — show message
+      
+      const contentType = res.headers.get('content-type') || '';
+      if (!contentType.includes('application/pdf')) {
+        console.error('Response is not PDF, content-type:', contentType);
+        setError('Resposta inválida do servidor.');
+        return;
+      }
+
+      const blob = await res.blob();
+      
+      if (blob.size < 100) {
+        console.error('PDF too small, likely empty:', blob.size);
+        setError('PDF gerado está vazio. Verifique os dados do perfil.');
+        return;
+      }
+
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement('a');
+      a.href = url;
+      a.download = 'Curriculo_Profissional.pdf';
+      document.body.appendChild(a);
+      a.click();
+      document.body.removeChild(a);
+      URL.revokeObjectURL(url);
       setIsGenerated(true);
+    } catch (err) {
+      console.error('PDF fetch error:', err);
+      setError('Não foi possível conectar ao servidor.');
     } finally {
       setIsGenerating(false);
-      setTimeout(() => setIsGenerated(false), 4000);
+      if (!error) {
+        setTimeout(() => {
+          setIsGenerated(false);
+          setError(null);
+        }, 4000);
+      }
     }
   };
 
@@ -109,6 +136,18 @@ export default function ResumeGenerator() {
                 </span>
               ))}
             </motion.div>
+
+            {/* Error message */}
+            {error && (
+              <motion.div
+                initial={{ opacity: 0, y: -10 }}
+                animate={{ opacity: 1, y: 0 }}
+                className="flex items-center justify-center gap-2 mb-4 text-sm text-red-500"
+              >
+                <AlertCircle size={16} />
+                {error}
+              </motion.div>
+            )}
 
             <motion.div variants={fadeInUp}>
               <Button
