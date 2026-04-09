@@ -124,6 +124,7 @@ function TimelineItem({ item, index }) {
 export default function About() {
   const [experiences, setExperiences] = useState([]);
   const [profile, setProfile] = useState(null);
+  const [isLoading, setIsLoading] = useState(true);
 
   useEffect(() => {
     experiencesApi.getAll().then(data => {
@@ -136,7 +137,7 @@ export default function About() {
 
     profileApi.get().then(data => {
       if (data) setProfile(data);
-    }).catch(console.error);
+    }).catch(console.error).finally(() => setIsLoading(false));
   }, []);
 
   return (
@@ -147,14 +148,14 @@ export default function About() {
       <div className="section-container">
         <SectionHeader
           badge="Sobre Mim"
-          title={profile?.about_title || 'Transformando ideias em código'}
-          subtitle={profile?.about_subtitle || 'Desenvolvedor apaixonado por criar soluções que fazem a diferença. Cada projeto é uma oportunidade de superar limites.'}
+          title={profile?.about_title || (isLoading ? '' : 'Transformando ideias em código')}
+          subtitle={profile?.about_subtitle || (isLoading ? '' : 'Desenvolvedor apaixonado por criar soluções que fazem a diferença. Cada projeto é uma oportunidade de superar limites.')}
         />
 
         {/* Stats Grid */}
         <motion.div
           variants={staggerContainer}
-          className="grid grid-cols-2 lg:grid-cols-4 gap-4 mb-20"
+          className={`grid grid-cols-2 lg:grid-cols-4 gap-4 mb-20 transition-opacity duration-300 ${isLoading ? 'opacity-0' : 'opacity-100'}`}
         >
           {((profile?.stats && profile.stats.length > 0) ? profile.stats : stats).map((stat, index) => (
             <StatCard key={index} {...stat} />

@@ -3,6 +3,7 @@ import { motion, AnimatePresence } from 'framer-motion';
 import { Menu, X, Moon, Sun, ArrowUp } from 'lucide-react';
 import { useThemeStore } from '../../stores';
 import { useScrollPosition } from '../../hooks';
+import { profileApi } from '../../services/api';
 
 const navLinks = [
   { label: 'Home', href: '#home' },
@@ -17,11 +18,18 @@ const navLinks = [
 export default function Navbar() {
   const [isMenuOpen, setIsMenuOpen] = useState(false);
   const [activeSection, setActiveSection] = useState('home');
+  const [profile, setProfile] = useState(null);
   const { isDark, toggleTheme } = useThemeStore();
   const scrollY = useScrollPosition();
 
   const isScrolled = scrollY > 50;
   const showBackToTop = scrollY > 500;
+
+  useEffect(() => {
+    profileApi.get().then(data => {
+      if (data) setProfile(data);
+    }).catch(console.error);
+  }, []);
 
   // Track active section
   useEffect(() => {
@@ -81,10 +89,21 @@ export default function Navbar() {
               whileTap={{ scale: 0.95 }}
             >
               <div className="w-9 h-9 rounded-xl bg-gradient-to-br from-[var(--color-primary)] to-[var(--color-accent)] flex items-center justify-center shadow-lg">
-                <span className="text-white font-bold text-sm">CE</span>
+                <span className="text-white font-bold text-sm">
+                  {profile?.name ? profile.name.substring(0, 2).toUpperCase() : ''}
+                </span>
               </div>
               <span className="text-lg font-bold text-[var(--color-text-primary)] hidden sm:block">
-                Carlos<span className="text-[var(--color-primary)]">Eduardo</span>
+                {profile?.name ? (
+                  <>
+                    {profile.name.trim().split(' ')[0]}
+                    {profile.name.trim().split(' ').length > 1 && (
+                      <span className="text-[var(--color-primary)]">
+                        {profile.name.trim().split(' ').slice(1).join(' ')}
+                      </span>
+                    )}
+                  </>
+                ) : null}
               </span>
             </motion.a>
 

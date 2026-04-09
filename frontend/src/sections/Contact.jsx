@@ -30,8 +30,9 @@ export default function Contact() {
   const [formData, setFormData] = useState({ name: '', email: '', subject: '', message: '' });
   const [status, setStatus] = useState(null); // 'success' | 'error' | null
   const [sending, setSending] = useState(false);
-  const [socialLinks, setSocialLinks] = useState(defaultSocialLinks);
-  const [contactLocation, setContactLocation] = useState('Brasil — Remoto');
+  const [socialLinks, setSocialLinks] = useState([]);
+  const [contactLocation, setContactLocation] = useState('');
+  const [isLoading, setIsLoading] = useState(true);
 
   useEffect(() => {
     profileApi.get().then(data => {
@@ -48,9 +49,18 @@ export default function Contact() {
             return { ...link, href };
           });
           setSocialLinks(links);
+        } else {
+          setSocialLinks(defaultSocialLinks);
         }
+      } else {
+        setContactLocation('Brasil — Remoto');
+        setSocialLinks(defaultSocialLinks);
       }
-    }).catch(console.error);
+    }).catch(err => {
+      console.error(err);
+      setContactLocation('Brasil — Remoto');
+      setSocialLinks(defaultSocialLinks);
+    }).finally(() => setIsLoading(false));
   }, []);
 
   const handleChange = (e) => {
@@ -86,7 +96,7 @@ export default function Contact() {
           subtitle="Estou sempre aberto a novas oportunidades, projetos e parcerias. Entre em contato!"
         />
 
-        <div className="grid grid-cols-1 lg:grid-cols-5 gap-12 max-w-5xl mx-auto">
+        <div className={`grid grid-cols-1 lg:grid-cols-5 gap-12 max-w-5xl mx-auto transition-opacity duration-300 ${isLoading ? 'opacity-0' : 'opacity-100'}`}>
           {/* Info side */}
           <motion.div
             className="lg:col-span-2 space-y-8"

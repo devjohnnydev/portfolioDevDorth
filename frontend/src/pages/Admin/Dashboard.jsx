@@ -4,7 +4,7 @@ import { useNavigate } from 'react-router-dom';
 import {
   LayoutDashboard, FolderKanban, Zap, Award, Briefcase, User, LogOut,
   Plus, Pencil, Trash2, Save, X, ChevronRight, Menu, Globe, Mail,
-  MessageCircle, Hash, Palette, Type
+  MessageCircle, Hash, Palette, Type, FileText
 } from 'lucide-react';
 import { useAdminStore } from '../../stores';
 import Button from '../../components/ui/Button';

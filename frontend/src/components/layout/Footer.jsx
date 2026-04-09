@@ -1,5 +1,7 @@
+import { useState, useEffect } from 'react';
 import { motion } from 'framer-motion';
 import { Mail, MessageCircle, Heart, ArrowUpRight, Code, Terminal, MonitorSmartphone } from 'lucide-react';
+import { profileApi } from '../../services/api';
 
 const Github = ({ size = 24, className = "" }) => (
   <svg xmlns="http://www.w3.org/2000/svg" width={size} height={size} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className={className}><path d="M15 22v-4a4.8 4.8 0 0 0-1-3.02c3.12-.34 6.4-1.51 6.4-6.9a5.4 5.4 0 0 0-1.5-3.89C18.8 3.5 18 2 18 2s-1.3-.4-3.5 1.1a12.3 12.3 0 0 0-6 0C6.3 1.6 5 2 5 2s-.8 1.5-.1 2.1A5.4 5.4 0 0 0 3.4 8c0 5.39 3.28 6.56 6.4 6.9a4.8 4.8 0 0 0-1 3.02V22"/><path d="M9 20c-4.3 1.4-5.3-2-8-2"/></svg>
@@ -22,22 +24,42 @@ const socialLinks = [
 ];
 
 export default function Footer() {
+  const [profile, setProfile] = useState(null);
+  const [isLoading, setIsLoading] = useState(true);
+
+  useEffect(() => {
+    profileApi.get().then(data => {
+      if (data) setProfile(data);
+    }).catch(console.error).finally(() => setIsLoading(false));
+  }, []);
+
   return (
     <footer className="relative border-t border-[var(--color-border)] bg-[var(--color-bg-secondary)]">
       <div className="section-container py-12">
         <div className="grid grid-cols-1 md:grid-cols-3 gap-8 items-center">
           {/* Brand */}
           <div>
-            <div className="flex items-center gap-2 mb-3">
+            <div className={`flex items-center gap-2 mb-3 transition-opacity duration-300 ${isLoading ? 'opacity-0' : 'opacity-100'}`}>
               <div className="w-8 h-8 rounded-lg bg-gradient-to-br from-[var(--color-primary)] to-[var(--color-accent)] flex items-center justify-center">
-                <span className="text-white font-bold text-xs">CE</span>
+                <span className="text-white font-bold text-xs">
+                  {profile?.name ? profile.name.substring(0, 2).toUpperCase() : ''}
+                </span>
               </div>
               <span className="text-lg font-bold">
-                Carlos<span className="text-[var(--color-primary)]">Eduardo</span>
+                {profile?.name ? (
+                  <>
+                    {profile.name.trim().split(' ')[0]}
+                    {profile.name.trim().split(' ').length > 1 && (
+                      <span className="text-[var(--color-primary)]">
+                        {' ' + profile.name.trim().split(' ').slice(1).join(' ')}
+                      </span>
+                    )}
+                  </>
+                ) : null}
               </span>
             </div>
-            <p className="text-sm text-[var(--color-text-tertiary)]">
-              Construindo sistemas que escalam ideias.
+            <p className={`text-sm text-[var(--color-text-tertiary)] transition-opacity duration-300 ${isLoading ? 'opacity-0' : 'opacity-100'}`}>
+              {profile?.bio || 'Construindo sistemas que escalam ideias.'}
             </p>
           </div>
 
@@ -78,9 +100,9 @@ export default function Footer() {
         </div>
 
         {/* Bottom */}
-        <div className="mt-10 pt-6 border-t border-[var(--color-border)] flex flex-col sm:flex-row items-center justify-between gap-4">
+        <div className={`mt-10 pt-6 border-t border-[var(--color-border)] flex flex-col sm:flex-row items-center justify-between gap-4 transition-opacity duration-300 ${isLoading ? 'opacity-0' : 'opacity-100'}`}>
           <p className="text-xs text-[var(--color-text-tertiary)]">
-            © {new Date().getFullYear()} Carlos Eduardo. Todos os direitos reservados.
+            © {new Date().getFullYear()} {profile?.name ? profile.name : ''}. Todos os direitos reservados.
           </p>
           <p className="text-xs text-[var(--color-text-tertiary)] flex items-center gap-1">
             Feito com <Heart size={12} className="text-[var(--color-error)] fill-[var(--color-error)]" /> e muito código

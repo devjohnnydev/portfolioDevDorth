@@ -18,13 +18,14 @@ export default function ResumeGenerator() {
     subtitle: 'Gere automaticamente um currículo completo com todos os meus dados, projetos, skills e experiências em formato PDF profissional.',
     buttonText: 'Gerar Currículo PDF'
   });
+  const [isLoading, setIsLoading] = useState(true);
 
   useEffect(() => {
     profileApi.get().then(data => {
       if (data?.resume_config) {
         setTexts(prev => ({ ...prev, ...data.resume_config }));
       }
-    }).catch(console.error);
+    }).catch(console.error).finally(() => setIsLoading(false));
   }, []);
 
   const handleGenerate = async () => {
@@ -93,7 +94,7 @@ export default function ResumeGenerator() {
         >
           <motion.div
             variants={fadeInUp}
-            className="card p-10 md:p-14 relative overflow-hidden"
+            className={`card p-10 md:p-14 relative overflow-hidden transition-opacity duration-300 ${isLoading ? 'opacity-0' : 'opacity-100'}`}
           >
             {/* Shimmer effect */}
             <div className="absolute inset-0 bg-gradient-to-r from-transparent via-[var(--color-primary)]/5 to-transparent shimmer" />

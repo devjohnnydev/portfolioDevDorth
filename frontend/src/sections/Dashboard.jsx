@@ -101,6 +101,7 @@ export default function Dashboard() {
   const [languageStats, setLanguageStats] = useState(defaultLanguageStats);
   const [recentActivity, setRecentActivity] = useState(defaultRecentActivity);
   const [sectionConfig, setSectionConfig] = useState(defaultSectionConfig);
+  const [isLoading, setIsLoading] = useState(true);
 
   useEffect(() => {
     profileApi.get().then(data => {
@@ -118,7 +119,7 @@ export default function Dashboard() {
           setSectionConfig(prev => ({ ...prev, ...data.dashboard_section_config }));
         }
       }
-    }).catch(console.error);
+    }).catch(console.error).finally(() => setIsLoading(false));
   }, []);
 
   return (
@@ -127,14 +128,14 @@ export default function Dashboard() {
 
       <div className="section-container">
         <SectionHeader
-          badge={sectionConfig.badge}
-          title={sectionConfig.title}
-          subtitle={sectionConfig.subtitle}
+          badge={isLoading ? '' : sectionConfig.badge}
+          title={isLoading ? '' : sectionConfig.title}
+          subtitle={isLoading ? '' : sectionConfig.subtitle}
         />
 
         {/* Metrics Grid */}
         <motion.div
-          className="grid grid-cols-2 lg:grid-cols-4 gap-4 mb-12"
+          className={`grid grid-cols-2 lg:grid-cols-4 gap-4 mb-12 transition-opacity duration-300 ${isLoading ? 'opacity-0' : 'opacity-100'}`}
           variants={staggerContainer}
           initial="hidden"
           whileInView="visible"
@@ -145,7 +146,7 @@ export default function Dashboard() {
           ))}
         </motion.div>
 
-        <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+        <div className={`grid grid-cols-1 lg:grid-cols-2 gap-6 transition-opacity duration-300 ${isLoading ? 'opacity-0' : 'opacity-100'}`}>
           {/* Language Distribution */}
           <motion.div
             className="card p-6"

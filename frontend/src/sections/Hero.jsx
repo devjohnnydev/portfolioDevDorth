@@ -16,13 +16,15 @@ const defaultHeadlines = [
 
 export default function Hero() {
   const [profile, setProfile] = useState(null);
-  const activeHeadlines = (profile?.hero_headlines && profile.hero_headlines.length > 0) ? profile.hero_headlines : defaultHeadlines;
+  const [isLoading, setIsLoading] = useState(true);
+  
+  const activeHeadlines = isLoading ? [''] : ((profile?.hero_headlines && profile.hero_headlines.length > 0) ? profile.hero_headlines : defaultHeadlines);
   const typedText = useTypewriter(activeHeadlines, 70, 40, 2500);
 
   useEffect(() => {
     profileApi.get().then(data => {
       if (data) setProfile(data);
-    }).catch(console.error);
+    }).catch(console.error).finally(() => setIsLoading(false));
   }, []);
 
   const scrollToProjects = () => {
@@ -34,11 +36,11 @@ export default function Hero() {
   };
 
   // Determine display values
-  const displayName = profile?.name || 'Carlos Eduardo';
-  const nameParts = displayName.split(' ');
-  const firstName = nameParts[0];
+  const displayName = profile?.name || (isLoading ? '' : 'Carlos Eduardo');
+  const nameParts = displayName ? displayName.split(' ') : [];
+  const firstName = nameParts[0] || '';
   const lastName = nameParts.length > 1 ? nameParts.slice(1).join(' ') : '';
-  const displayTitle = profile?.title || 'Fullstack Developer | Systems & Scalable Solutions';
+  const displayTitle = profile?.title || (isLoading ? '' : 'Fullstack Developer | Systems & Scalable Solutions');
 
   return (
     <section
@@ -133,7 +135,7 @@ export default function Hero() {
         <motion.div
           variants={heroTextVariants}
           custom={5}
-          className="mt-16 grid grid-cols-3 gap-8 max-w-md mx-auto"
+          className={`mt-16 grid grid-cols-3 gap-8 max-w-md mx-auto transition-opacity duration-300 ${isLoading ? 'opacity-0' : 'opacity-100'}`}
         >
           {((profile?.stats && profile.stats.length > 0) ? profile.stats : [
             { value: '3+', label: 'Anos de exp.' },
