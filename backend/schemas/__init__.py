@@ -29,6 +29,12 @@ class ProfileBase(BaseModel):
     location: Optional[str] = None
     social_links: Optional[Dict[str, Any]] = None
     stats: Optional[List[Dict[str, Any]]] = None
+    dashboard_metrics: Optional[List[Dict[str, Any]]] = None
+    dashboard_languages: Optional[List[Dict[str, Any]]] = None
+    dashboard_activity: Optional[List[Dict[str, Any]]] = None
+    hero_headlines: Optional[List[str]] = None
+    about_title: Optional[str] = None
+    about_subtitle: Optional[str] = None
 
 class ProfileCreate(ProfileBase):
     pass

@@ -21,8 +21,14 @@ class Profile(Base):
     bio = Column(Text, nullable=True)
     email = Column(String, nullable=True)
     location = Column(String, nullable=True)
-    social_links = Column(JSON, nullable=True) # e.g. {"github": "url", "linkedin": "url"}
-    stats = Column(JSON, nullable=True) # e.g. [{"label": "Anos de exp.", "value": "3+"}, ...]
+    social_links = Column(JSON, nullable=True) # {"github": "url", "linkedin": "url", "email": "...", "instagram": "...", "whatsapp": "..."}
+    stats = Column(JSON, nullable=True) # [{"label": "Anos de exp.", "value": "3+"}, ...]
+    dashboard_metrics = Column(JSON, nullable=True) # [{"label": "Linhas de Código", "value": 15000, "suffix": "+", "color": "#3B82F6"}, ...]
+    dashboard_languages = Column(JSON, nullable=True) # [{"name": "JavaScript", "percentage": 35, "color": "#F7DF1E"}, ...]
+    dashboard_activity = Column(JSON, nullable=True) # [{"date": "Hoje", "action": "Deploy", "project": "..."}, ...]
+    hero_headlines = Column(JSON, nullable=True) # ["Construindo sistemas...", ...]
+    about_title = Column(String, nullable=True)
+    about_subtitle = Column(Text, nullable=True)
     updated_at = Column(TIMESTAMP(timezone=True), onupdate=func.now())
 
 from sqlalchemy import LargeBinary

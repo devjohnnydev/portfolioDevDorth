@@ -3,12 +3,33 @@ import { motion, AnimatePresence } from 'framer-motion';
 import { useNavigate } from 'react-router-dom';
 import {
   LayoutDashboard, FolderKanban, Zap, Award, Briefcase, User, LogOut,
-  Plus, Pencil, Trash2, Save, X, ChevronRight, Menu
+  Plus, Pencil, Trash2, Save, X, ChevronRight, Menu, Globe, Mail,
+  MessageCircle, Hash, Palette, Type
 } from 'lucide-react';
 import { useAdminStore } from '../../stores';
 import Button from '../../components/ui/Button';
 import Modal from '../../components/ui/Modal';
 import { projectsApi, skillsApi, certificationsApi, experiencesApi, profileApi, uploadApi } from '../../services/api';
+
+const Github = ({ size = 16, className = "" }) => (
+  <svg xmlns="http://www.w3.org/2000/svg" width={size} height={size} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className={className}><path d="M15 22v-4a4.8 4.8 0 0 0-1-3.02c3.12-.34 6.4-1.51 6.4-6.9a5.4 5.4 0 0 0-1.5-3.89C18.8 3.5 18 2 18 2s-1.3-.4-3.5 1.1a12.3 12.3 0 0 0-6 0C6.3 1.6 5 2 5 2s-.8 1.5-.1 2.1A5.4 5.4 0 0 0 3.4 8c0 5.39 3.28 6.56 6.4 6.9a4.8 4.8 0 0 0-1 3.02V22"/><path d="M9 20c-4.3 1.4-5.3-2-8-2"/></svg>
+);
+
+const Linkedin = ({ size = 16, className = "" }) => (
+  <svg xmlns="http://www.w3.org/2000/svg" width={size} height={size} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className={className}><path d="M16 8a6 6 0 0 1 6 6v7h-4v-7a2 2 0 0 0-2-2 2 2 0 0 0-2 2v7h-4v-7a6 6 0 0 1 6-6z"/><rect width="4" height="12" x="2" y="9"/><circle cx="4" cy="4" r="2"/></svg>
+);
+
+const Instagram = ({ size = 16, className = "" }) => (
+  <svg xmlns="http://www.w3.org/2000/svg" width={size} height={size} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className={className}><rect width="20" height="20" x="2" y="2" rx="5" ry="5"/><path d="M16 11.37A4 4 0 1 1 12.63 8 4 4 0 0 1 16 11.37z"/><line x1="17.5" x2="17.51" y1="6.5" y2="6.5"/></svg>
+);
+
+const socialNetworks = [
+  { key: 'github', label: 'GitHub', icon: Github, color: '#333', placeholder: 'https://github.com/seu-usuario' },
+  { key: 'linkedin', label: 'LinkedIn', icon: Linkedin, color: '#0A66C2', placeholder: 'https://linkedin.com/in/seu-perfil' },
+  { key: 'email', label: 'Email', icon: Mail, color: '#EA4335', placeholder: 'seu@email.com' },
+  { key: 'instagram', label: 'Instagram', icon: Instagram, color: '#E4405F', placeholder: 'https://instagram.com/seu-perfil' },
+  { key: 'whatsapp', label: 'WhatsApp', icon: MessageCircle, color: '#25D366', placeholder: 'https://wa.me/5511999999999' },
+];
 
 const tabs = [
   { id: 'overview', label: 'Visão Geral', icon: LayoutDashboard },
@@ -117,11 +138,15 @@ function CrudPanel({ title, items, fields, onSave, onDelete, loading }) {
               ) : field.type === 'file' ? (
                 <div>
                   {formData[field.key] && typeof formData[field.key] === 'string' && (
-                    <img src={formData[field.key].startsWith('/api') ? `${import.meta.env.VITE_API_URL || ''}${formData[field.key]}` : formData[field.key]} className="h-20 w-20 object-cover rounded mb-2" alt="Preview"/>
+                    formData[field.key].match(/\.(mp4|webm|ogg)$/i) || formData[field.key].includes('video') ? (
+                      <video src={formData[field.key].startsWith('/api') ? `${import.meta.env.VITE_API_URL || ''}${formData[field.key]}` : formData[field.key]} className="h-32 w-auto rounded mb-2 object-cover" controls muted />
+                    ) : (
+                      <img src={formData[field.key].startsWith('/api') ? `${import.meta.env.VITE_API_URL || ''}${formData[field.key]}` : formData[field.key]} className="h-20 w-20 object-cover rounded mb-2" alt="Preview"/>
+                    )
                   )}
                   <input
                     type="file"
-                    accept="image/*"
+                    accept="image/*,video/*"
                     onChange={async (e) => {
                       if (e.target.files && e.target.files[0]) {
                         try {
@@ -202,11 +227,51 @@ function OverviewPanel({ counts }) {
 }
 
 /* ========================================
-   Profile Editor Panel
+   Collapsible Section helper
+   ======================================== */
+function AdminSection({ title, icon: Icon, children, defaultOpen = false }) {
+  const [open, setOpen] = useState(defaultOpen);
+  return (
+    <div className="border border-[var(--color-border)] rounded-xl overflow-hidden">
+      <button
+        onClick={() => setOpen(!open)}
+        className="w-full flex items-center gap-3 px-5 py-4 bg-[var(--color-bg-secondary)] hover:bg-[var(--color-bg-secondary)]/80 transition-colors cursor-pointer"
+      >
+        {Icon && <Icon size={18} className="text-[var(--color-primary)]" />}
+        <span className="text-sm font-bold text-[var(--color-text-primary)] flex-1 text-left">{title}</span>
+        <ChevronRight size={16} className={`text-[var(--color-text-tertiary)] transition-transform duration-200 ${open ? 'rotate-90' : ''}`} />
+      </button>
+      <AnimatePresence>
+        {open && (
+          <motion.div
+            initial={{ height: 0, opacity: 0 }}
+            animate={{ height: 'auto', opacity: 1 }}
+            exit={{ height: 0, opacity: 0 }}
+            transition={{ duration: 0.2 }}
+            className="overflow-hidden"
+          >
+            <div className="p-5 space-y-4">
+              {children}
+            </div>
+          </motion.div>
+        )}
+      </AnimatePresence>
+    </div>
+  );
+}
+
+/* ========================================
+   Input helper
+   ======================================== */
+const inputCls = "w-full px-3 py-2 rounded-lg bg-[var(--color-bg-secondary)] border border-[var(--color-border)] text-sm outline-none focus:border-[var(--color-primary)] text-[var(--color-text-primary)] transition-colors";
+
+/* ========================================
+   Profile Editor Panel — FULL
    ======================================== */
 function ProfileEditor() {
   const [profile, setProfile] = useState({});
   const [loading, setLoading] = useState(true);
+  const [saving, setSaving] = useState(false);
 
   useEffect(() => {
     loadProfile();
@@ -215,16 +280,16 @@ function ProfileEditor() {
   const loadProfile = async () => {
     try {
       const data = await profileApi.get();
-      setProfile(data || { name: '', title: '', bio: '', email: '', location: '' });
+      setProfile(data || { name: '', title: '', bio: '', email: '', location: '', social_links: {}, stats: [], dashboard_metrics: [], dashboard_languages: [], dashboard_activity: [], hero_headlines: [], about_title: '', about_subtitle: '' });
     } catch (e) {
       console.error(e);
-      setProfile({ name: '', title: '', bio: '', email: '', location: '' });
     } finally {
       setLoading(false);
     }
   };
 
   const handleSave = async () => {
+    setSaving(true);
     try {
       await profileApi.update({
         name: profile.name || '',
@@ -232,116 +297,307 @@ function ProfileEditor() {
         bio: profile.bio || '',
         email: profile.email || '',
         location: profile.location || '',
-        social_links: profile.social_links || { github: '', linkedin: '', twitter: '' },
-        stats: profile.stats || [
-           { label: 'Anos de exp.', value: '3+' },
-           { label: 'Projetos', value: '20+' },
-           { label: 'Tecnologias', value: '10+' }
-        ]
+        social_links: profile.social_links || {},
+        stats: profile.stats || [],
+        dashboard_metrics: profile.dashboard_metrics || [],
+        dashboard_languages: profile.dashboard_languages || [],
+        dashboard_activity: profile.dashboard_activity || [],
+        hero_headlines: profile.hero_headlines || [],
+        about_title: profile.about_title || '',
+        about_subtitle: profile.about_subtitle || '',
       });
       alert('Perfil salvo com sucesso!');
     } catch (e) {
       alert('Erro ao salvar perfil.');
+    } finally {
+      setSaving(false);
     }
   };
 
   if (loading) return <div className="p-8 text-center text-[var(--color-text-tertiary)]">Carregando...</div>;
 
   return (
-    <div>
-      <h2 className="text-xl font-bold mb-6">Editar Perfil</h2>
-      <div className="card p-6 space-y-4 max-w-2xl">
-        <div>
-          <label className="block text-sm font-medium text-[var(--color-text-primary)] mb-1.5">Nome Completo</label>
-          <input
-            type="text"
-            value={profile.name || ''}
-            onChange={(e) => setProfile(p => ({ ...p, name: e.target.value }))}
-            className="w-full px-3 py-2 rounded-lg bg-[var(--color-bg-secondary)] border border-[var(--color-border)] text-sm outline-none focus:border-[var(--color-primary)]"
-            placeholder="Ex: Carlos Eduardo"
-          />
-        </div>
-        <div>
-          <label className="block text-sm font-medium text-[var(--color-text-primary)] mb-1.5">Título / Cargo</label>
-          <input
-            type="text"
-            value={profile.title || ''}
-            onChange={(e) => setProfile(p => ({ ...p, title: e.target.value }))}
-            className="w-full px-3 py-2 rounded-lg bg-[var(--color-bg-secondary)] border border-[var(--color-border)] text-sm outline-none focus:border-[var(--color-primary)]"
-            placeholder="Ex: Fullstack Developer | Systems & Scalable Solutions"
-          />
-        </div>
-        <div>
-          <label className="block text-sm font-medium text-[var(--color-text-primary)] mb-1.5">Bio Curta (Sobre Mim)</label>
-          <textarea
-            value={profile.bio || ''}
-            onChange={(e) => setProfile(p => ({ ...p, bio: e.target.value }))}
-            rows={4}
-            className="w-full px-3 py-2 rounded-lg bg-[var(--color-bg-secondary)] border border-[var(--color-border)] text-sm outline-none focus:border-[var(--color-primary)] resize-none"
-            placeholder="Ex: Transformando ideias em código..."
-          />
-        </div>
+    <div className="space-y-6 max-w-3xl">
+      <div className="flex items-center justify-between">
+        <h2 className="text-xl font-bold">Editar Perfil</h2>
+        <Button variant="primary" onClick={handleSave} icon={Save} loading={saving}>Salvar Tudo</Button>
+      </div>
 
-        {/* Social Links */}
-        <div className="pt-4 border-t border-[var(--color-border)] mt-4">
-          <h3 className="text-lg font-bold text-[var(--color-text-primary)] mb-4">Redes Sociais</h3>
-          <div className="space-y-4">
-             {['github', 'linkedin', 'twitter'].map((network) => (
-               <div key={network}>
-                 <label className="block text-sm font-medium text-[var(--color-text-primary)] mb-1.5 capitalize">{network}</label>
-                 <input
-                   type="text"
-                   value={profile.social_links?.[network] || ''}
-                   onChange={(e) => setProfile(p => ({ ...p, social_links: { ...p.social_links, [network]: e.target.value } }))}
-                   className="w-full px-3 py-2 rounded-lg bg-[var(--color-bg-secondary)] border border-[var(--color-border)] text-sm outline-none focus:border-[var(--color-primary)]"
-                   placeholder={`URL do ${network}`}
-                 />
-               </div>
-             ))}
+      {/* === PERFIL BÁSICO === */}
+      <AdminSection title="Informações Básicas" icon={User} defaultOpen={true}>
+        <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+          <div>
+            <label className="block text-xs font-medium text-[var(--color-text-tertiary)] mb-1.5">Nome Completo</label>
+            <input type="text" value={profile.name || ''} onChange={(e) => setProfile(p => ({ ...p, name: e.target.value }))} className={inputCls} placeholder="Carlos Eduardo" />
+          </div>
+          <div>
+            <label className="block text-xs font-medium text-[var(--color-text-tertiary)] mb-1.5">Título / Cargo</label>
+            <input type="text" value={profile.title || ''} onChange={(e) => setProfile(p => ({ ...p, title: e.target.value }))} className={inputCls} placeholder="Fullstack Developer" />
+          </div>
+          <div>
+            <label className="block text-xs font-medium text-[var(--color-text-tertiary)] mb-1.5">Email</label>
+            <input type="email" value={profile.email || ''} onChange={(e) => setProfile(p => ({ ...p, email: e.target.value }))} className={inputCls} placeholder="seu@email.com" />
+          </div>
+          <div>
+            <label className="block text-xs font-medium text-[var(--color-text-tertiary)] mb-1.5">Localização</label>
+            <input type="text" value={profile.location || ''} onChange={(e) => setProfile(p => ({ ...p, location: e.target.value }))} className={inputCls} placeholder="Brasil — Remoto" />
           </div>
         </div>
+        <div>
+          <label className="block text-xs font-medium text-[var(--color-text-tertiary)] mb-1.5">Bio / Sobre Mim</label>
+          <textarea value={profile.bio || ''} onChange={(e) => setProfile(p => ({ ...p, bio: e.target.value }))} rows={3} className={`${inputCls} resize-none`} placeholder="Desenvolver apaixonado por criar soluções..." />
+        </div>
+      </AdminSection>
 
-        {/* Stats */}
-        <div className="pt-4 border-t border-[var(--color-border)] mt-4">
-          <h3 className="text-lg font-bold text-[var(--color-text-primary)] mb-4">Métricas & Analytics</h3>
-          <div className="space-y-4">
-             {(profile.stats || []).map((stat, index) => (
-                <div key={index} className="flex gap-2 items-center">
-                  <div className="flex-1">
-                     <label className="block text-xs text-[var(--color-text-tertiary)] mb-1">Valor (Ex: 20+)</label>
-                     <input type="text" value={stat.value || ''}
-                            onChange={(e) => {
-                               const newStats = [...(profile.stats || [])];
-                               newStats[index].value = e.target.value;
-                               setProfile(p => ({ ...p, stats: newStats }));
-                            }}
-                            className="w-full px-3 py-2 rounded-lg bg-[var(--color-bg-secondary)] border border-[var(--color-border)] text-sm" />
-                  </div>
-                  <div className="flex-1">
-                     <label className="block text-xs text-[var(--color-text-tertiary)] mb-1">Rótulo (Ex: Projetos)</label>
-                     <input type="text" value={stat.label || ''}
-                            onChange={(e) => {
-                               const newStats = [...(profile.stats || [])];
-                               newStats[index].label = e.target.value;
-                               setProfile(p => ({ ...p, stats: newStats }));
-                            }}
-                            className="w-full px-3 py-2 rounded-lg bg-[var(--color-bg-secondary)] border border-[var(--color-border)] text-sm" />
-                  </div>
-                  <button type="button" onClick={() => {
-                      const newStats = profile.stats.filter((_, i) => i !== index);
-                      setProfile(p => ({ ...p, stats: newStats }));
-                  }} className="mt-5 p-2 text-[var(--color-error)] hover:bg-[var(--color-error)]/10 rounded-lg cursor-pointer"><Trash2 size={16} /></button>
+      {/* === REDES SOCIAIS === */}
+      <AdminSection title="Redes Sociais" icon={Globe}>
+        <p className="text-xs text-[var(--color-text-tertiary)] mb-3">
+          Configure os links que aparecerão na seção de contato do portfolio.
+        </p>
+        <div className="space-y-3">
+          {socialNetworks.map((net) => (
+            <div key={net.key} className="flex items-center gap-3">
+              <div className="w-8 h-8 rounded-lg flex items-center justify-center flex-shrink-0" style={{ backgroundColor: `${net.color}15` }}>
+                <net.icon size={14} style={{ color: net.color }} />
+              </div>
+              <div className="flex-1">
+                <input
+                  type="text"
+                  value={profile.social_links?.[net.key] || ''}
+                  onChange={(e) => setProfile(p => ({ ...p, social_links: { ...p.social_links, [net.key]: e.target.value } }))}
+                  className={inputCls}
+                  placeholder={net.placeholder}
+                />
+              </div>
+            </div>
+          ))}
+        </div>
+      </AdminSection>
+
+      {/* === STATS HERO/ABOUT === */}
+      <AdminSection title="Stats (Hero & Sobre Mim)" icon={Hash}>
+        <p className="text-xs text-[var(--color-text-tertiary)] mb-3">
+          Métricas exibidas no Hero e na seção Sobre Mim (ex: "3+ Anos de exp.", "20+ Projetos").
+        </p>
+        <div className="space-y-3">
+          {(profile.stats || []).map((stat, index) => (
+            <div key={index} className="flex gap-2 items-center">
+              <div className="flex-1">
+                <label className="block text-xs text-[var(--color-text-tertiary)] mb-1">Valor</label>
+                <input type="text" value={stat.value || ''} onChange={(e) => {
+                  const newStats = [...(profile.stats || [])];
+                  newStats[index] = { ...newStats[index], value: e.target.value };
+                  setProfile(p => ({ ...p, stats: newStats }));
+                }} className={inputCls} placeholder="20+" />
+              </div>
+              <div className="flex-1">
+                <label className="block text-xs text-[var(--color-text-tertiary)] mb-1">Rótulo</label>
+                <input type="text" value={stat.label || ''} onChange={(e) => {
+                  const newStats = [...(profile.stats || [])];
+                  newStats[index] = { ...newStats[index], label: e.target.value };
+                  setProfile(p => ({ ...p, stats: newStats }));
+                }} className={inputCls} placeholder="Projetos" />
+              </div>
+              <button type="button" onClick={() => {
+                setProfile(p => ({ ...p, stats: p.stats.filter((_, i) => i !== index) }));
+              }} className="mt-5 p-2 text-[var(--color-error)] hover:bg-[var(--color-error)]/10 rounded-lg cursor-pointer"><Trash2 size={16} /></button>
+            </div>
+          ))}
+          <Button variant="secondary" size="sm" icon={Plus} onClick={() => {
+            setProfile(p => ({ ...p, stats: [...(p.stats || []), { label: '', value: '' }] }));
+          }}>Adicionar Stat</Button>
+        </div>
+      </AdminSection>
+
+      {/* === HERO HEADLINES (TYPEWRITER) === */}
+      <AdminSection title="Frases do Hero (Typewriter)" icon={Type}>
+        <p className="text-xs text-[var(--color-text-tertiary)] mb-3">
+          Frases animadas que aparecem digitando no topo do portfolio.
+        </p>
+        <div className="space-y-3">
+          {(profile.hero_headlines || []).map((headline, index) => (
+            <div key={index} className="flex gap-2 items-center">
+              <div className="flex-1">
+                <input type="text" value={headline || ''} onChange={(e) => {
+                  const newHeadlines = [...(profile.hero_headlines || [])];
+                  newHeadlines[index] = e.target.value;
+                  setProfile(p => ({ ...p, hero_headlines: newHeadlines }));
+                }} className={inputCls} placeholder="Construindo sistemas que escalam ideias" />
+              </div>
+              <button type="button" onClick={() => {
+                setProfile(p => ({ ...p, hero_headlines: p.hero_headlines.filter((_, i) => i !== index) }));
+              }} className="p-2 text-[var(--color-error)] hover:bg-[var(--color-error)]/10 rounded-lg cursor-pointer"><Trash2 size={16} /></button>
+            </div>
+          ))}
+          <Button variant="secondary" size="sm" icon={Plus} onClick={() => {
+            setProfile(p => ({ ...p, hero_headlines: [...(p.hero_headlines || []), ''] }));
+          }}>Adicionar Frase</Button>
+        </div>
+      </AdminSection>
+
+      {/* === ABOUT SECTION TEXTS === */}
+      <AdminSection title="Seção Sobre Mim (Textos)" icon={Type}>
+        <div>
+          <label className="block text-xs font-medium text-[var(--color-text-tertiary)] mb-1.5">Título da seção</label>
+          <input type="text" value={profile.about_title || ''} onChange={(e) => setProfile(p => ({ ...p, about_title: e.target.value }))} className={inputCls} placeholder="Transformando ideias em código" />
+        </div>
+        <div>
+          <label className="block text-xs font-medium text-[var(--color-text-tertiary)] mb-1.5">Subtítulo da seção</label>
+          <textarea value={profile.about_subtitle || ''} onChange={(e) => setProfile(p => ({ ...p, about_subtitle: e.target.value }))} rows={2} className={`${inputCls} resize-none`} placeholder="Desenvolvedor apaixonado por criar soluções..." />
+        </div>
+      </AdminSection>
+
+      {/* === DASHBOARD MÉTRICAS === */}
+      <AdminSection title="Dashboard — Métricas Públicas" icon={LayoutDashboard}>
+        <p className="text-xs text-[var(--color-text-tertiary)] mb-3">
+          Os 4 cards de métricas exibidos na seção Dashboard do portfolio (Linhas de Código, Projetos Concluídos, etc.).
+        </p>
+        <div className="space-y-3">
+          {(profile.dashboard_metrics || []).map((metric, index) => (
+            <div key={index} className="card p-3 space-y-2">
+              <div className="grid grid-cols-2 gap-2">
+                <div>
+                  <label className="block text-xs text-[var(--color-text-tertiary)] mb-1">Rótulo</label>
+                  <input type="text" value={metric.label || ''} onChange={(e) => {
+                    const newMetrics = [...(profile.dashboard_metrics || [])];
+                    newMetrics[index] = { ...newMetrics[index], label: e.target.value };
+                    setProfile(p => ({ ...p, dashboard_metrics: newMetrics }));
+                  }} className={inputCls} placeholder="Linhas de Código" />
                 </div>
-             ))}
-             <Button variant="secondary" size="sm" icon={Plus} onClick={() => {
-                 setProfile(p => ({ ...p, stats: [...(p.stats || []), { label: '', value: '' }] }));
-             }}>Adicionar Métrica</Button>
-          </div>
+                <div>
+                  <label className="block text-xs text-[var(--color-text-tertiary)] mb-1">Valor (número)</label>
+                  <input type="number" value={metric.value || ''} onChange={(e) => {
+                    const newMetrics = [...(profile.dashboard_metrics || [])];
+                    newMetrics[index] = { ...newMetrics[index], value: parseInt(e.target.value) || 0 };
+                    setProfile(p => ({ ...p, dashboard_metrics: newMetrics }));
+                  }} className={inputCls} placeholder="15000" />
+                </div>
+                <div>
+                  <label className="block text-xs text-[var(--color-text-tertiary)] mb-1">Sufixo</label>
+                  <input type="text" value={metric.suffix || ''} onChange={(e) => {
+                    const newMetrics = [...(profile.dashboard_metrics || [])];
+                    newMetrics[index] = { ...newMetrics[index], suffix: e.target.value };
+                    setProfile(p => ({ ...p, dashboard_metrics: newMetrics }));
+                  }} className={inputCls} placeholder="+" />
+                </div>
+                <div>
+                  <label className="block text-xs text-[var(--color-text-tertiary)] mb-1">Cor (hex)</label>
+                  <div className="flex gap-2">
+                    <input type="color" value={metric.color || '#3B82F6'} onChange={(e) => {
+                      const newMetrics = [...(profile.dashboard_metrics || [])];
+                      newMetrics[index] = { ...newMetrics[index], color: e.target.value };
+                      setProfile(p => ({ ...p, dashboard_metrics: newMetrics }));
+                    }} className="w-10 h-9 rounded-lg border border-[var(--color-border)] cursor-pointer" />
+                    <input type="text" value={metric.color || '#3B82F6'} onChange={(e) => {
+                      const newMetrics = [...(profile.dashboard_metrics || [])];
+                      newMetrics[index] = { ...newMetrics[index], color: e.target.value };
+                      setProfile(p => ({ ...p, dashboard_metrics: newMetrics }));
+                    }} className={`${inputCls} flex-1`} />
+                  </div>
+                </div>
+              </div>
+              <div className="flex justify-end">
+                <button type="button" onClick={() => {
+                  setProfile(p => ({ ...p, dashboard_metrics: p.dashboard_metrics.filter((_, i) => i !== index) }));
+                }} className="p-1.5 text-[var(--color-error)] hover:bg-[var(--color-error)]/10 rounded-lg cursor-pointer text-xs flex items-center gap-1"><Trash2 size={12} /> Remover</button>
+              </div>
+            </div>
+          ))}
+          <Button variant="secondary" size="sm" icon={Plus} onClick={() => {
+            setProfile(p => ({ ...p, dashboard_metrics: [...(p.dashboard_metrics || []), { label: '', value: 0, suffix: '+', color: '#3B82F6' }] }));
+          }}>Adicionar Métrica</Button>
         </div>
+      </AdminSection>
 
-        <div className="pt-4 flex justify-end">
-          <Button variant="primary" onClick={handleSave} icon={Save}>Salvar Perfil</Button>
+      {/* === DASHBOARD LINGUAGENS === */}
+      <AdminSection title="Dashboard — Distribuição de Linguagens" icon={Palette}>
+        <p className="text-xs text-[var(--color-text-tertiary)] mb-3">
+          Barras de progresso das linguagens na seção Dashboard.
+        </p>
+        <div className="space-y-3">
+          {(profile.dashboard_languages || []).map((lang, index) => (
+            <div key={index} className="flex gap-2 items-center">
+              <div className="flex-1">
+                <label className="block text-xs text-[var(--color-text-tertiary)] mb-1">Linguagem</label>
+                <input type="text" value={lang.name || ''} onChange={(e) => {
+                  const newLangs = [...(profile.dashboard_languages || [])];
+                  newLangs[index] = { ...newLangs[index], name: e.target.value };
+                  setProfile(p => ({ ...p, dashboard_languages: newLangs }));
+                }} className={inputCls} placeholder="JavaScript" />
+              </div>
+              <div className="w-20">
+                <label className="block text-xs text-[var(--color-text-tertiary)] mb-1">%</label>
+                <input type="number" min="0" max="100" value={lang.percentage || ''} onChange={(e) => {
+                  const newLangs = [...(profile.dashboard_languages || [])];
+                  newLangs[index] = { ...newLangs[index], percentage: parseInt(e.target.value) || 0 };
+                  setProfile(p => ({ ...p, dashboard_languages: newLangs }));
+                }} className={inputCls} placeholder="35" />
+              </div>
+              <div className="w-20">
+                <label className="block text-xs text-[var(--color-text-tertiary)] mb-1">Cor</label>
+                <input type="color" value={lang.color || '#3B82F6'} onChange={(e) => {
+                  const newLangs = [...(profile.dashboard_languages || [])];
+                  newLangs[index] = { ...newLangs[index], color: e.target.value };
+                  setProfile(p => ({ ...p, dashboard_languages: newLangs }));
+                }} className="w-full h-9 rounded-lg border border-[var(--color-border)] cursor-pointer" />
+              </div>
+              <button type="button" onClick={() => {
+                setProfile(p => ({ ...p, dashboard_languages: p.dashboard_languages.filter((_, i) => i !== index) }));
+              }} className="mt-5 p-2 text-[var(--color-error)] hover:bg-[var(--color-error)]/10 rounded-lg cursor-pointer"><Trash2 size={16} /></button>
+            </div>
+          ))}
+          <Button variant="secondary" size="sm" icon={Plus} onClick={() => {
+            setProfile(p => ({ ...p, dashboard_languages: [...(p.dashboard_languages || []), { name: '', percentage: 0, color: '#3B82F6' }] }));
+          }}>Adicionar Linguagem</Button>
         </div>
+      </AdminSection>
+
+      {/* === DASHBOARD ATIVIDADE === */}
+      <AdminSection title="Dashboard — Atividade Recente" icon={Zap}>
+        <p className="text-xs text-[var(--color-text-tertiary)] mb-3">
+          Feed de atividade recente exibido no Dashboard público.
+        </p>
+        <div className="space-y-3">
+          {(profile.dashboard_activity || []).map((act, index) => (
+            <div key={index} className="flex gap-2 items-center">
+              <div className="w-24">
+                <label className="block text-xs text-[var(--color-text-tertiary)] mb-1">Data</label>
+                <input type="text" value={act.date || ''} onChange={(e) => {
+                  const newAct = [...(profile.dashboard_activity || [])];
+                  newAct[index] = { ...newAct[index], date: e.target.value };
+                  setProfile(p => ({ ...p, dashboard_activity: newAct }));
+                }} className={inputCls} placeholder="Hoje" />
+              </div>
+              <div className="flex-1">
+                <label className="block text-xs text-[var(--color-text-tertiary)] mb-1">Ação</label>
+                <input type="text" value={act.action || ''} onChange={(e) => {
+                  const newAct = [...(profile.dashboard_activity || [])];
+                  newAct[index] = { ...newAct[index], action: e.target.value };
+                  setProfile(p => ({ ...p, dashboard_activity: newAct }));
+                }} className={inputCls} placeholder="Deploy de nova feature" />
+              </div>
+              <div className="flex-1">
+                <label className="block text-xs text-[var(--color-text-tertiary)] mb-1">Projeto</label>
+                <input type="text" value={act.project || ''} onChange={(e) => {
+                  const newAct = [...(profile.dashboard_activity || [])];
+                  newAct[index] = { ...newAct[index], project: e.target.value };
+                  setProfile(p => ({ ...p, dashboard_activity: newAct }));
+                }} className={inputCls} placeholder="Sistema Clínica" />
+              </div>
+              <button type="button" onClick={() => {
+                setProfile(p => ({ ...p, dashboard_activity: p.dashboard_activity.filter((_, i) => i !== index) }));
+              }} className="mt-5 p-2 text-[var(--color-error)] hover:bg-[var(--color-error)]/10 rounded-lg cursor-pointer"><Trash2 size={16} /></button>
+            </div>
+          ))}
+          <Button variant="secondary" size="sm" icon={Plus} onClick={() => {
+            setProfile(p => ({ ...p, dashboard_activity: [...(p.dashboard_activity || []), { date: '', action: '', project: '' }] }));
+          }}>Adicionar Atividade</Button>
+        </div>
+      </AdminSection>
+
+      {/* SAVE BUTTON at the bottom too */}
+      <div className="flex justify-end pt-4">
+        <Button variant="primary" onClick={handleSave} icon={Save} loading={saving}>Salvar Tudo</Button>
       </div>
     </div>
   );

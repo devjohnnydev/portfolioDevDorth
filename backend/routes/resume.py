@@ -2,7 +2,7 @@ from fastapi import APIRouter, Depends
 from fastapi.responses import StreamingResponse
 from sqlalchemy.orm import Session
 from database import get_db
-from models import Profile, Experience, Project, Skill
+from models import Profile, Experience, Project, Skill, Certification
 from services.pdf_generator import generate_resume_pdf
 
 router = APIRouter()
@@ -22,10 +22,11 @@ def generate_resume(db: Session = Depends(get_db)):
         )
         
     experiences = db.query(Experience).order_by(Experience.id.desc()).all()
-    projects = db.query(Project).filter(Project.featured == True).all()
+    projects = db.query(Project).all()
     skills = db.query(Skill).all()
+    certifications = db.query(Certification).all()
     
-    pdf_buffer = generate_resume_pdf(profile, experiences, projects, skills)
+    pdf_buffer = generate_resume_pdf(profile, experiences, projects, skills, certifications)
     
     filename = f"Curriculo_{profile.name.replace(' ', '_')}.pdf" if profile and profile.name else "Curriculo.pdf"
     
@@ -34,3 +35,4 @@ def generate_resume(db: Session = Depends(get_db)):
         media_type="application/pdf",
         headers={"Content-Disposition": f"attachment; filename={filename}"}
     )
+

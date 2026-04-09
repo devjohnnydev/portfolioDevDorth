@@ -4,7 +4,6 @@ import { Briefcase, GraduationCap, Award, Code2, TrendingUp, Calendar } from 'lu
 import SectionHeader from '../components/ui/SectionHeader';
 import { fadeInUp, staggerContainer, slideInLeft, slideInRight } from '../animations/variants';
 import { useAnimatedCounter } from '../hooks';
-import { useAnimatedCounter } from '../hooks';
 import { experiencesApi, profileApi } from '../services/api';
 
 const stats = [
@@ -148,8 +147,8 @@ export default function About() {
       <div className="section-container">
         <SectionHeader
           badge="Sobre Mim"
-          title="Transformando ideias em código"
-          subtitle="Desenvolvedor apaixonado por criar soluções que fazem a diferença. Cada projeto é uma oportunidade de superar limites."
+          title={profile?.about_title || 'Transformando ideias em código'}
+          subtitle={profile?.about_subtitle || 'Desenvolvedor apaixonado por criar soluções que fazem a diferença. Cada projeto é uma oportunidade de superar limites.'}
         />
 
         {/* Stats Grid */}
@@ -179,7 +178,7 @@ export default function About() {
             whileInView="visible"
             viewport={{ once: true, margin: '-50px' }}
           >
-            {timelineList.map((item, i) => (
+            {experiences.map((item, i) => (
               <TimelineItem key={i} item={item} index={i} />
             ))}
           </motion.div>

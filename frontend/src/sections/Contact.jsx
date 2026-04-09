@@ -1,9 +1,10 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { motion } from 'framer-motion';
 import { Mail, MessageCircle, Send, CheckCircle, AlertCircle, MapPin, ArrowUpRight } from 'lucide-react';
 import SectionHeader from '../components/ui/SectionHeader';
 import Button from '../components/ui/Button';
 import { fadeInUp, staggerContainer, slideInLeft, slideInRight } from '../animations/variants';
+import { profileApi } from '../services/api';
 
 const Github = ({ size = 16, className = "" }) => (
   <svg xmlns="http://www.w3.org/2000/svg" width={size} height={size} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className={className}><path d="M15 22v-4a4.8 4.8 0 0 0-1-3.02c3.12-.34 6.4-1.51 6.4-6.9a5.4 5.4 0 0 0-1.5-3.89C18.8 3.5 18 2 18 2s-1.3-.4-3.5 1.1a12.3 12.3 0 0 0-6 0C6.3 1.6 5 2 5 2s-.8 1.5-.1 2.1A5.4 5.4 0 0 0 3.4 8c0 5.39 3.28 6.56 6.4 6.9a4.8 4.8 0 0 0-1 3.02V22"/><path d="M9 20c-4.3 1.4-5.3-2-8-2"/></svg>
@@ -17,18 +18,40 @@ const Instagram = ({ size = 16, className = "" }) => (
   <svg xmlns="http://www.w3.org/2000/svg" width={size} height={size} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className={className}><rect width="20" height="20" x="2" y="2" rx="5" ry="5"/><path d="M16 11.37A4 4 0 1 1 12.63 8 4 4 0 0 1 16 11.37z"/><line x1="17.5" x2="17.51" y1="6.5" y2="6.5"/></svg>
 );
 
-const socialLinks = [
-  { icon: Github, label: 'GitHub', href: '#', color: '#333' },
-  { icon: Linkedin, label: 'LinkedIn', href: '#', color: '#0A66C2' },
-  { icon: Mail, label: 'Email', href: 'mailto:contato@carloseduardo.dev', color: '#EA4335' },
-  { icon: Instagram, label: 'Instagram', href: '#', color: '#E4405F' },
-  { icon: MessageCircle, label: 'WhatsApp', href: '#', color: '#25D366' },
+const defaultSocialLinks = [
+  { icon: Github, label: 'GitHub', href: '#', color: '#333', key: 'github' },
+  { icon: Linkedin, label: 'LinkedIn', href: '#', color: '#0A66C2', key: 'linkedin' },
+  { icon: Mail, label: 'Email', href: '#', color: '#EA4335', key: 'email' },
+  { icon: Instagram, label: 'Instagram', href: '#', color: '#E4405F', key: 'instagram' },
+  { icon: MessageCircle, label: 'WhatsApp', href: '#', color: '#25D366', key: 'whatsapp' },
 ];
 
 export default function Contact() {
   const [formData, setFormData] = useState({ name: '', email: '', subject: '', message: '' });
   const [status, setStatus] = useState(null); // 'success' | 'error' | null
   const [sending, setSending] = useState(false);
+  const [socialLinks, setSocialLinks] = useState(defaultSocialLinks);
+  const [contactLocation, setContactLocation] = useState('Brasil — Remoto');
+
+  useEffect(() => {
+    profileApi.get().then(data => {
+      if (data) {
+        if (data.location) setContactLocation(data.location);
+        if (data.social_links) {
+          const links = defaultSocialLinks.map(link => {
+            const url = data.social_links[link.key];
+            if (!url) return link;
+            let href = url;
+            if (link.key === 'email' && !url.startsWith('mailto:')) {
+              href = `mailto:${url}`;
+            }
+            return { ...link, href };
+          });
+          setSocialLinks(links);
+        }
+      }
+    }).catch(console.error);
+  }, []);
 
   const handleChange = (e) => {
     setFormData((prev) => ({ ...prev, [e.target.name]: e.target.value }));
@@ -83,7 +106,7 @@ export default function Contact() {
 
             <motion.div variants={slideInLeft} className="flex items-center gap-3 text-sm text-[var(--color-text-secondary)]">
               <MapPin size={16} className="text-[var(--color-primary)]" />
-              Brasil — Remoto
+              {contactLocation}
             </motion.div>
 
             {/* Social Links */}

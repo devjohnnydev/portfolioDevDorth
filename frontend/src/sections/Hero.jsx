@@ -7,7 +7,7 @@ import ParticleBackground from '../components/three/ParticleBackground';
 import { heroTextVariants, staggerContainer } from '../animations/variants';
 import { profileApi } from '../services/api';
 
-const headlines = [
+const defaultHeadlines = [
   'Construindo sistemas que escalam ideias',
   'Transformando conceitos em soluções reais',
   'Engenharia full-stack de alta performance',
@@ -15,8 +15,9 @@ const headlines = [
 ];
 
 export default function Hero() {
-  const typedText = useTypewriter(headlines, 70, 40, 2500);
   const [profile, setProfile] = useState(null);
+  const activeHeadlines = (profile?.hero_headlines && profile.hero_headlines.length > 0) ? profile.hero_headlines : defaultHeadlines;
+  const typedText = useTypewriter(activeHeadlines, 70, 40, 2500);
 
   useEffect(() => {
     profileApi.get().then(data => {
@@ -99,7 +100,7 @@ export default function Hero() {
           className="h-12 flex items-center justify-center mb-10"
         >
           <p className="text-base sm:text-lg text-[var(--color-text-tertiary)] font-mono">
-            {'> '}{profile?.bio || typedText}
+            {'> '}{typedText}
             <span className="inline-block w-0.5 h-5 bg-[var(--color-primary)] ml-1 animate-pulse align-middle" />
           </p>
         </motion.div>

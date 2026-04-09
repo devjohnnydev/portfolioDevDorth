@@ -1,17 +1,19 @@
+import { useState, useEffect } from 'react';
 import { motion } from 'framer-motion';
 import { BarChart3, Code2, Briefcase, TrendingUp, Zap, Globe } from 'lucide-react';
 import SectionHeader from '../components/ui/SectionHeader';
 import { fadeInUp, staggerContainer } from '../animations/variants';
 import { useAnimatedCounter } from '../hooks';
+import { profileApi } from '../services/api';
 
-const metrics = [
-  { icon: Code2, value: 15000, suffix: '+', label: 'Linhas de Código', color: '#3B82F6' },
-  { icon: Briefcase, value: 20, suffix: '+', label: 'Projetos Concluídos', color: '#8B5CF6' },
-  { icon: TrendingUp, value: 3, suffix: '+', label: 'Anos de Experiência', color: '#10B981' },
-  { icon: Zap, value: 10, suffix: '+', label: 'Tecnologias', color: '#F59E0B' },
+const defaultMetrics = [
+  { icon: 'Code2', value: 15000, suffix: '+', label: 'Linhas de Código', color: '#3B82F6' },
+  { icon: 'Briefcase', value: 20, suffix: '+', label: 'Projetos Concluídos', color: '#8B5CF6' },
+  { icon: 'TrendingUp', value: 3, suffix: '+', label: 'Anos de Experiência', color: '#10B981' },
+  { icon: 'Zap', value: 10, suffix: '+', label: 'Tecnologias', color: '#F59E0B' },
 ];
 
-const languageStats = [
+const defaultLanguageStats = [
   { name: 'JavaScript', percentage: 35, color: '#F7DF1E' },
   { name: 'Python', percentage: 30, color: '#3776AB' },
   { name: 'TypeScript', percentage: 15, color: '#3178C6' },
@@ -19,14 +21,17 @@ const languageStats = [
   { name: 'HTML/CSS', percentage: 10, color: '#E34F26' },
 ];
 
-const recentActivity = [
+const defaultRecentActivity = [
   { date: 'Hoje', action: 'Deploy de nova feature', project: 'Sistema Clínica' },
   { date: 'Ontem', action: 'Fix de bug em produção', project: 'E-commerce' },
   { date: '2 dias', action: 'Nova página criada', project: 'Portfolio' },
   { date: '3 dias', action: 'Refactor de API', project: 'API REST' },
 ];
 
-function MetricCard({ icon: Icon, value, suffix, label, color }) {
+const iconMap = { Code2, Briefcase, TrendingUp, Zap };
+
+function MetricCard({ icon, value, suffix, label, color }) {
+  const IconComp = (typeof icon === 'string' ? iconMap[icon] : icon) || Code2;
   const [ref, count] = useAnimatedCounter(value, 2500);
 
   return (
@@ -41,7 +46,7 @@ function MetricCard({ icon: Icon, value, suffix, label, color }) {
           className="w-10 h-10 rounded-lg flex items-center justify-center transition-transform duration-300 group-hover:scale-110"
           style={{ backgroundColor: `${color}15` }}
         >
-          <Icon size={20} style={{ color }} />
+          <IconComp size={20} style={{ color }} />
         </div>
         <div>
           <p className="text-2xl font-bold text-[var(--color-text-primary)]">
@@ -84,6 +89,26 @@ function LanguageBar({ name, percentage, color, delay }) {
 }
 
 export default function Dashboard() {
+  const [metrics, setMetrics] = useState(defaultMetrics);
+  const [languageStats, setLanguageStats] = useState(defaultLanguageStats);
+  const [recentActivity, setRecentActivity] = useState(defaultRecentActivity);
+
+  useEffect(() => {
+    profileApi.get().then(data => {
+      if (data) {
+        if (data.dashboard_metrics && data.dashboard_metrics.length > 0) {
+          setMetrics(data.dashboard_metrics);
+        }
+        if (data.dashboard_languages && data.dashboard_languages.length > 0) {
+          setLanguageStats(data.dashboard_languages);
+        }
+        if (data.dashboard_activity && data.dashboard_activity.length > 0) {
+          setRecentActivity(data.dashboard_activity);
+        }
+      }
+    }).catch(console.error);
+  }, []);
+
   return (
     <section id="dashboard" className="py-24 relative">
       <div className="absolute bottom-0 left-0 w-96 h-96 bg-[var(--color-primary)]/5 rounded-full blur-3xl -translate-x-1/2" />
@@ -103,8 +128,8 @@ export default function Dashboard() {
           whileInView="visible"
           viewport={{ once: true, margin: '-50px' }}
         >
-          {metrics.map((m) => (
-            <MetricCard key={m.label} {...m} />
+          {metrics.map((m, i) => (
+            <MetricCard key={m.label || i} {...m} />
           ))}
         </motion.div>
 
@@ -122,7 +147,7 @@ export default function Dashboard() {
             </div>
             <div className="space-y-4">
               {languageStats.map((lang, i) => (
-                <LanguageBar key={lang.name} {...lang} delay={i} />
+                <LanguageBar key={lang.name || i} {...lang} delay={i} />
               ))}
             </div>
           </motion.div>
