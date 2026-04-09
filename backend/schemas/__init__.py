@@ -35,6 +35,7 @@ class ProfileBase(BaseModel):
     hero_headlines: Optional[List[str]] = None
     about_title: Optional[str] = None
     about_subtitle: Optional[str] = None
+    resume_config: Optional[dict] = None
 
 class ProfileCreate(ProfileBase):
     pass

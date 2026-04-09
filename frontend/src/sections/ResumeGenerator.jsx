@@ -1,13 +1,28 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { motion } from 'framer-motion';
 import { Download, FileText, Sparkles, CheckCircle, Loader2 } from 'lucide-react';
 import SectionHeader from '../components/ui/SectionHeader';
 import Button from '../components/ui/Button';
 import { fadeInUp } from '../animations/variants';
+import { profileApi } from '../services/api';
 
 export default function ResumeGenerator() {
   const [isGenerating, setIsGenerating] = useState(false);
   const [isGenerated, setIsGenerated] = useState(false);
+  const [texts, setTexts] = useState({
+    titleHighlight: 'Currículo',
+    titleNormal: ' Profissional',
+    subtitle: 'Gere automaticamente um currículo completo com todos os meus dados, projetos, skills e experiências em formato PDF profissional.',
+    buttonText: 'Gerar Currículo PDF'
+  });
+
+  useEffect(() => {
+    profileApi.get().then(data => {
+      if (data?.resume_config) {
+        setTexts(prev => ({ ...prev, ...data.resume_config }));
+      }
+    }).catch(console.error);
+  }, []);
 
   const handleGenerate = async () => {
     setIsGenerating(true);
@@ -68,14 +83,14 @@ export default function ResumeGenerator() {
               variants={fadeInUp}
               className="text-2xl md:text-3xl font-bold text-[var(--color-text-primary)] mb-3"
             >
-              Currículo <span className="gradient-text">Profissional</span>
+              {texts.titleHighlight} <span className="gradient-text">{texts.titleNormal}</span>
             </motion.h3>
 
             <motion.p
               variants={fadeInUp}
               className="text-[var(--color-text-secondary)] mb-8 max-w-md mx-auto"
             >
-              Gere automaticamente um currículo completo com todos os meus dados, projetos, skills e experiências em formato PDF profissional.
+              {texts.subtitle}
             </motion.p>
 
             {/* Features */}
@@ -108,7 +123,7 @@ export default function ResumeGenerator() {
                   ? 'Gerando PDF...'
                   : isGenerated
                   ? 'Currículo gerado!'
-                  : 'Gerar Currículo PDF'}
+                  : texts.buttonText}
               </Button>
             </motion.div>
           </motion.div>

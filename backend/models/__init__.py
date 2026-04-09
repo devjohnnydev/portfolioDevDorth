@@ -29,6 +29,7 @@ class Profile(Base):
     hero_headlines = Column(JSON, nullable=True) # ["Construindo sistemas...", ...]
     about_title = Column(String, nullable=True)
     about_subtitle = Column(Text, nullable=True)
+    resume_config = Column(JSON, nullable=True)
     updated_at = Column(TIMESTAMP(timezone=True), onupdate=func.now())
 
 from sqlalchemy import LargeBinary

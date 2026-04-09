@@ -280,7 +280,7 @@ function ProfileEditor() {
   const loadProfile = async () => {
     try {
       const data = await profileApi.get();
-      setProfile(data || { name: '', title: '', bio: '', email: '', location: '', social_links: {}, stats: [], dashboard_metrics: [], dashboard_languages: [], dashboard_activity: [], hero_headlines: [], about_title: '', about_subtitle: '' });
+      setProfile(data || { name: '', title: '', bio: '', email: '', location: '', social_links: {}, stats: [], dashboard_metrics: [], dashboard_languages: [], dashboard_activity: [], hero_headlines: [], about_title: '', about_subtitle: '', resume_config: {} });
     } catch (e) {
       console.error(e);
     } finally {
@@ -305,6 +305,7 @@ function ProfileEditor() {
         hero_headlines: profile.hero_headlines || [],
         about_title: profile.about_title || '',
         about_subtitle: profile.about_subtitle || '',
+        resume_config: profile.resume_config || {},
       });
       alert('Perfil salvo com sucesso!');
     } catch (e) {
@@ -444,6 +445,33 @@ function ProfileEditor() {
         <div>
           <label className="block text-xs font-medium text-[var(--color-text-tertiary)] mb-1.5">Subtítulo da seção</label>
           <textarea value={profile.about_subtitle || ''} onChange={(e) => setProfile(p => ({ ...p, about_subtitle: e.target.value }))} rows={2} className={`${inputCls} resize-none`} placeholder="Desenvolvedor apaixonado por criar soluções..." />
+        </div>
+      </AdminSection>
+
+      {/* === PDF GENERATOR TEXTS === */}
+      <AdminSection title="Seção Gerador de PDF" icon={FileText}>
+        <p className="text-xs text-[var(--color-text-tertiary)] mb-3">
+          Configure os textos da área do seu gerador de currículo (PDF).
+        </p>
+        <div className="space-y-4">
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+            <div>
+              <label className="block text-xs font-medium text-[var(--color-text-tertiary)] mb-1.5">Título (Destaque)</label>
+              <input type="text" value={profile.resume_config?.titleHighlight || ''} onChange={(e) => setProfile(p => ({ ...p, resume_config: { ...p.resume_config, titleHighlight: e.target.value } }))} className={inputCls} placeholder="Currículo" />
+            </div>
+            <div>
+              <label className="block text-xs font-medium text-[var(--color-text-tertiary)] mb-1.5">Título (Colorido)</label>
+              <input type="text" value={profile.resume_config?.titleNormal || ''} onChange={(e) => setProfile(p => ({ ...p, resume_config: { ...p.resume_config, titleNormal: e.target.value } }))} className={inputCls} placeholder="Profissional" />
+            </div>
+          </div>
+          <div>
+            <label className="block text-xs font-medium text-[var(--color-text-tertiary)] mb-1.5">Subtítulo</label>
+            <textarea value={profile.resume_config?.subtitle || ''} onChange={(e) => setProfile(p => ({ ...p, resume_config: { ...p.resume_config, subtitle: e.target.value } }))} rows={2} className={`${inputCls} resize-none`} placeholder="Gere automaticamente um currículo completo..." />
+          </div>
+          <div>
+            <label className="block text-xs font-medium text-[var(--color-text-tertiary)] mb-1.5">Texto do Botão</label>
+            <input type="text" value={profile.resume_config?.buttonText || ''} onChange={(e) => setProfile(p => ({ ...p, resume_config: { ...p.resume_config, buttonText: e.target.value } }))} className={inputCls} placeholder="Gerar Currículo PDF" />
+          </div>
         </div>
       </AdminSection>
 
