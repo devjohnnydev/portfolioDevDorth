@@ -31,6 +31,9 @@ class Profile(Base):
     about_subtitle = Column(Text, nullable=True)
     about_image_url = Column(String, nullable=True)
     resume_config = Column(JSON, nullable=True)
+    resume_languages = Column(JSON, nullable=True)  # [{"name": "Português", "level": "Nativo"}, ...]
+    resume_education = Column(JSON, nullable=True)  # [{"title": "...", "institution": "...", "period": "..."}]
+    resume_website = Column(String, nullable=True)
     dashboard_section_config = Column(JSON, nullable=True) # {"badge": "Dashboard", "title": "Métricas & Analytics", "subtitle": "...", "languagesTitle": "...", "activityTitle": "..."}
     updated_at = Column(TIMESTAMP(timezone=True), onupdate=func.now())
 
