@@ -1,41 +1,14 @@
 import { useState, useEffect, useMemo } from 'react';
-import { motion, AnimatePresence } from 'framer-motion';
-import { Award, ExternalLink, Calendar, Building2, Download, Filter, ChevronRight, Search } from 'lucide-react';
+import { motion } from 'framer-motion';
+import { Award, ExternalLink, Calendar, Building2, Download, ChevronRight, Search, ArrowRight } from 'lucide-react';
+import { useNavigate } from 'react-router-dom';
 import SectionHeader from '../components/ui/SectionHeader';
 import Modal from '../components/ui/Modal';
 import Button from '../components/ui/Button';
 import { fadeInUp, staggerContainer } from '../animations/variants';
 import { certificationsApi } from '../services/api';
 
-const mockCertifications = [
-  {
-    id: 1,
-    title: 'Python Full Stack',
-    institution: 'Plataforma Online',
-    date: '2024',
-    category: 'Fullstack',
-    credential_url: '#',
-    description: 'Desenvolvimento completo com Python, incluindo FastAPI, Django e automação.',
-  },
-  {
-    id: 2,
-    title: 'React Avançado',
-    institution: 'Curso Especializado',
-    date: '2024',
-    category: 'Frontend',
-    credential_url: '#',
-    description: 'Hooks avançados, performance, state management e arquitetura de componentes.',
-  },
-  {
-    id: 3,
-    title: 'Banco de Dados SQL',
-    institution: 'Curso Online',
-    date: '2023',
-    category: 'Backend',
-    credential_url: '#',
-    description: 'PostgreSQL, modelagem, queries avançadas, otimização e administração.',
-  },
-];
+const CERTS_LIMIT = 6;
 
 function CertCard({ cert, index, onClick }) {
   return (
@@ -57,12 +30,8 @@ function CertCard({ cert, index, onClick }) {
       )}
 
       {/* Main Icon */}
-      <div className="w-14 h-14 rounded-2xl bg-gradient-to-br from-[var(--color-bg-secondary)] to-[var(--color-bg-primary)] border border-[var(--color-border)] flex items-center justify-center mb-5 group-hover:scale-110 group-hover:shadow-[var(--shadow-glow-sm)] transition-all duration-500 overflow-hidden">
-        {cert.badge_url ? (
-          <img src={cert.badge_url.startsWith('/api') ? `${import.meta.env.VITE_API_URL || ''}${cert.badge_url}` : cert.badge_url} alt="" className="w-full h-full object-cover" />
-        ) : (
-          <Award size={24} className="text-[var(--color-primary)]" />
-        )}
+      <div className="w-14 h-14 rounded-2xl bg-gradient-to-br from-[var(--color-bg-secondary)] to-[var(--color-bg-primary)] border border-[var(--color-border)] flex items-center justify-center mb-5 group-hover:scale-110 transition-all duration-500 overflow-hidden">
+        <Award size={24} className="text-[var(--color-primary)]" />
       </div>
 
       <h3 className="text-xl font-bold text-[var(--color-text-primary)] mb-2 group-hover:text-[var(--color-primary)] transition-colors line-clamp-2">
@@ -85,9 +54,7 @@ function CertCard({ cert, index, onClick }) {
       </p>
 
       <div className="mt-auto flex items-center justify-between pt-4 border-t border-white/5">
-        <button
-          className="text-xs font-bold text-[var(--color-primary)] flex items-center gap-1 group/btn hover:underline"
-        >
+        <button className="text-xs font-bold text-[var(--color-primary)] flex items-center gap-1 group/btn hover:underline">
           Mais detalhes <ChevronRight size={14} className="group-hover/btn:translate-x-1 transition-transform" />
         </button>
         {cert.credential_url && cert.credential_url !== '#' && (
@@ -112,6 +79,7 @@ export default function Certifications() {
   const [activeCategory, setActiveCategory] = useState('Todas');
   const [selectedCert, setSelectedCert] = useState(null);
   const [searchQuery, setSearchQuery] = useState('');
+  const navigate = useNavigate();
 
   useEffect(() => {
     certificationsApi.getAll()
@@ -119,7 +87,7 @@ export default function Certifications() {
       .catch(console.error);
   }, []);
 
-  const displayList = dbCerts.length > 0 ? dbCerts : mockCertifications;
+  const displayList = dbCerts;
 
   const categories = useMemo(() => {
     const cats = ['Todas', ...new Set(displayList.map(c => c.category?.trim()).filter(Boolean))];
@@ -138,6 +106,11 @@ export default function Certifications() {
     });
   }, [displayList, activeCategory, searchQuery]);
 
+  const showAll = filteredCerts.length > CERTS_LIMIT;
+  const visibleCerts = showAll ? filteredCerts.slice(0, CERTS_LIMIT) : filteredCerts;
+
+  if (displayList.length === 0) return null;
+
   return (
     <section id="certifications" className="py-32 relative bg-[var(--color-bg-primary)] overflow-hidden">
       {/* Background Decor */}
@@ -154,23 +127,25 @@ export default function Certifications() {
         {/* Filters and Search Bar */}
         <div className="flex flex-col md:flex-row items-center justify-between gap-6 mb-12">
           {/* Categories */}
-          <div className="flex items-center gap-2 overflow-x-auto pb-2 md:pb-0 no-scrollbar w-full md:w-auto">
-            <div className="flex items-center gap-2 p-1.5 bg-[var(--color-bg-secondary)] border border-[var(--color-border)] rounded-2xl">
-              {categories.map((cat) => (
-                <button
-                  key={cat}
-                  onClick={() => setActiveCategory(cat)}
-                  className={`px-4 py-1.5 rounded-xl text-xs font-bold transition-all duration-300 min-w-fit cursor-pointer ${
-                    activeCategory === cat
-                      ? 'bg-[var(--color-primary)] text-white shadow-lg shadow-[var(--color-primary)]/25'
-                      : 'text-[var(--color-text-tertiary)] hover:text-[var(--color-text-primary)] hover:bg-[var(--color-bg-primary)]'
-                  }`}
-                >
-                  {cat}
-                </button>
-              ))}
+          {categories.length > 1 && (
+            <div className="flex items-center gap-2 overflow-x-auto pb-2 md:pb-0 no-scrollbar w-full md:w-auto">
+              <div className="flex items-center gap-2 p-1.5 bg-[var(--color-bg-secondary)] border border-[var(--color-border)] rounded-2xl">
+                {categories.map((cat) => (
+                  <button
+                    key={cat}
+                    onClick={() => setActiveCategory(cat)}
+                    className={`px-4 py-1.5 rounded-xl text-xs font-bold transition-all duration-300 min-w-fit cursor-pointer ${
+                      activeCategory === cat
+                        ? 'bg-[var(--color-primary)] text-white shadow-lg shadow-[var(--color-primary)]/25'
+                        : 'text-[var(--color-text-tertiary)] hover:text-[var(--color-text-primary)] hover:bg-[var(--color-bg-primary)]'
+                    }`}
+                  >
+                    {cat}
+                  </button>
+                ))}
+              </div>
             </div>
-          </div>
+          )}
 
           {/* Search */}
           <div className="relative w-full md:w-64">
@@ -193,7 +168,7 @@ export default function Certifications() {
           initial="hidden"
           animate="visible"
         >
-          {filteredCerts.map((cert, i) => (
+          {visibleCerts.map((cert, i) => (
             <CertCard 
               key={cert.id} 
               cert={cert} 
@@ -212,6 +187,27 @@ export default function Certifications() {
             <p className="text-[var(--color-text-tertiary)]">Nenhuma certificação encontrada nesta categoria.</p>
           </motion.div>
         )}
+
+        {/* Ver Todos button */}
+        {showAll && (
+          <motion.div
+            className="flex justify-center mt-12"
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ delay: 0.3 }}
+          >
+            <button
+              onClick={() => navigate('/certifications')}
+              className="group inline-flex items-center gap-2.5 px-8 py-3.5 rounded-full font-bold text-sm
+                bg-[var(--color-bg-card)] text-[var(--color-text-primary)] border border-[var(--color-border)]
+                hover:border-[var(--color-primary)] hover:text-[var(--color-primary)] hover:shadow-lg
+                transition-all duration-300 cursor-pointer"
+            >
+              Ver todas as certificações ({filteredCerts.length})
+              <ArrowRight size={18} className="group-hover:translate-x-1 transition-transform" />
+            </button>
+          </motion.div>
+        )}
       </div>
 
       {/* Details Modal */}
@@ -223,12 +219,8 @@ export default function Certifications() {
         {selectedCert && (
           <div className="space-y-8">
             <div className="flex flex-col md:flex-row gap-6 items-start">
-              <div className="w-24 h-24 sm:w-32 sm:h-32 rounded-2xl bg-gradient-to-br from-[var(--color-bg-secondary)] to-[var(--color-bg-primary)] border border-[var(--color-border)] flex items-center justify-center flex-shrink-0 mx-auto md:mx-0 shadow-lg overflow-hidden">
-                {selectedCert.badge_url ? (
-                  <img src={selectedCert.badge_url.startsWith('/api') ? `${import.meta.env.VITE_API_URL || ''}${selectedCert.badge_url}` : selectedCert.badge_url} alt="" className="w-full h-full object-cover" />
-                ) : (
-                  <Award size={48} className="text-[var(--color-primary)]" />
-                )}
+              <div className="w-24 h-24 sm:w-32 sm:h-32 rounded-2xl bg-gradient-to-br from-[var(--color-bg-secondary)] to-[var(--color-bg-primary)] border border-[var(--color-border)] flex items-center justify-center flex-shrink-0 mx-auto md:mx-0 shadow-lg">
+                <Award size={48} className="text-[var(--color-primary)]" />
               </div>
               <div className="flex-1 text-center md:text-left">
                 <h3 className="text-2xl font-bold text-[var(--color-text-primary)] mb-2">{selectedCert.title}</h3>

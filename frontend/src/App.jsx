@@ -19,6 +19,8 @@ const Contact = lazy(() => import('./sections/Contact'));
 // Admin pages (lazy)
 const AdminLogin = lazy(() => import('./pages/Admin/Login'));
 const AdminDashboard = lazy(() => import('./pages/Admin/Dashboard'));
+const AllProjects = lazy(() => import('./pages/AllProjects'));
+const AllCertifications = lazy(() => import('./pages/AllCertifications'));
 
 const queryClient = new QueryClient({
   defaultOptions: {
@@ -98,6 +100,22 @@ export default function App() {
             element={
               <Suspense fallback={<SectionLoader />}>
                 <AdminDashboard />
+              </Suspense>
+            }
+          />
+          <Route
+            path="/projects"
+            element={
+              <Suspense fallback={<SectionLoader />}>
+                <AllProjects />
+              </Suspense>
+            }
+          />
+          <Route
+            path="/certifications"
+            element={
+              <Suspense fallback={<SectionLoader />}>
+                <AllCertifications />
               </Suspense>
             }
           />

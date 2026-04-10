@@ -1,7 +1,8 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useMemo } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { ExternalLink, Eye, X, ChevronRight, Layers } from 'lucide-react';
+import { ExternalLink, Eye, X, ChevronRight, Layers, ArrowRight } from 'lucide-react';
 import { projectsApi } from '../services/api';
+import { useNavigate } from 'react-router-dom';
 
 const Github = ({ size = 20, className = "" }) => (
   <svg xmlns="http://www.w3.org/2000/svg" width={size} height={size} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className={className}><path d="M15 22v-4a4.8 4.8 0 0 0-1-3.02c3.12-.34 6.4-1.51 6.4-6.9a5.4 5.4 0 0 0-1.5-3.89C18.8 3.5 18 2 18 2s-1.3-.4-3.5 1.1a12.3 12.3 0 0 0-6 0C6.3 1.6 5 2 5 2s-.8 1.5-.1 2.1A5.4 5.4 0 0 0 3.4 8c0 5.39 3.28 6.56 6.4 6.9a4.8 4.8 0 0 0-1 3.02V22"/><path d="M9 20c-4.3 1.4-5.3-2-8-2"/></svg>
@@ -11,47 +12,7 @@ import Button from '../components/ui/Button';
 import Modal from '../components/ui/Modal';
 import { fadeInUp, staggerContainer } from '../animations/variants';
 
-const mockProjects = [
-  {
-    id: 1,
-    title: 'Sistema de Gestão Clínica',
-    description: 'Sistema completo para gestão de clínicas estéticas com agendamento, financeiro, estoque e relatórios.',
-    longDescription: 'Plataforma SaaS robusta desenvolvida para clínicas estéticas, com módulos completos de agendamento inteligente, gestão financeira com dashboards analíticos, controle de estoque com alertas automáticos, sistema RBAC dinâmico e geração de relatórios PDF.',
-    image: null,
-    category: 'Fullstack',
-    tech: ['React', 'FastAPI', 'PostgreSQL', 'TailwindCSS'],
-    github: '#',
-    demo: '#',
-    featured: true,
-    highlights: ['Dashboard analítico avançado', 'Sistema RBAC dinâmico', 'Integração Stripe', 'Deploy automatizado'],
-  },
-  {
-    id: 2,
-    title: 'E-commerce Premium',
-    description: 'Loja virtual completa com carrinho, pagamentos online e painel administrativo.',
-    longDescription: 'E-commerce moderno com experiência de compra premium, sistema de carrinho persistente, integração completa com Stripe para pagamentos, painel admin para gestão de produtos e pedidos, e sistema de notificações em tempo real.',
-    image: null,
-    category: 'Fullstack',
-    tech: ['React', 'Node.js', 'MongoDB', 'Stripe'],
-    github: '#',
-    demo: '#',
-    featured: true,
-    highlights: ['Pagamentos com Stripe', 'Painel admin completo', 'Notificações em tempo real'],
-  },
-  {
-    id: 3,
-    title: 'Dashboard Analytics',
-    description: 'Dashboard de análise de dados com gráficos interativos e relatórios em tempo real.',
-    longDescription: 'Plataforma de business intelligence com dashboards customizáveis, gráficos interativos com D3.js, exportação de relatórios e integração com múltiplas fontes de dados.',
-    image: null,
-    category: 'Frontend',
-    tech: ['React', 'D3.js', 'TailwindCSS', 'Chart.js'],
-    github: '#',
-    demo: '#',
-    featured: false,
-    highlights: ['Gráficos interativos', 'Exportação PDF/Excel', 'Dados em tempo real'],
-  },
-];
+const PROJECTS_LIMIT = 6;
 
 function ProjectCard({ project, onClick }) {
   const colors = {
@@ -177,6 +138,7 @@ export default function Projects() {
   const [activeCategory, setActiveCategory] = useState('Todos');
   const [selectedProject, setSelectedProject] = useState(null);
   const [dbProjects, setDbProjects] = useState([]);
+  const navigate = useNavigate();
 
   useEffect(() => {
     projectsApi.getAll().then(data => {
@@ -192,12 +154,19 @@ export default function Projects() {
     }).catch(console.error);
   }, []);
 
-  const displayList = dbProjects.length > 0 ? dbProjects : mockProjects;
-  const dynamicCategories = ['Todos', ...new Set(displayList.map(p => p.category))];
+  const displayList = dbProjects;
+  const categories = useMemo(() => {
+    const cats = ['Todos', ...new Set(displayList.map(p => p.category).filter(Boolean))];
+    return cats;
+  }, [displayList]);
 
-  const filtered = activeCategory === 'Todos'
-    ? displayList
-    : displayList.filter((p) => p.category === activeCategory);
+  const filtered = useMemo(() => {
+    if (activeCategory === 'Todos') return displayList;
+    return displayList.filter(p => p.category === activeCategory);
+  }, [displayList, activeCategory]);
+
+  const showAll = filtered.length > PROJECTS_LIMIT;
+  const visibleProjects = showAll ? filtered.slice(0, PROJECTS_LIMIT) : filtered;
 
   return (
     <section id="projects" className="py-24 bg-[var(--color-bg-secondary)] relative">
@@ -209,53 +178,74 @@ export default function Projects() {
         />
 
         {/* Filters */}
-        <motion.div
-          className="flex flex-wrap justify-center gap-2 mb-12"
-          initial={{ opacity: 0, y: 20 }}
-          whileInView={{ opacity: 1, y: 0 }}
-          viewport={{ once: true }}
-        >
-          {dynamicCategories.map((cat) => (
-            <motion.button
-              key={cat}
-              onClick={() => setActiveCategory(cat)}
-              className={`px-5 py-2 rounded-xl text-sm font-medium transition-all duration-300 cursor-pointer ${
-                activeCategory === cat
-                  ? 'bg-[var(--color-primary)] text-white shadow-lg shadow-[var(--color-primary)]/25'
-                  : 'bg-[var(--color-bg-card)] text-[var(--color-text-secondary)] border border-[var(--color-border)] hover:border-[var(--color-primary)] hover:text-[var(--color-primary)]'
-              }`}
-              whileHover={{ y: -2 }}
-              whileTap={{ scale: 0.95 }}
-            >
-              {cat}
-            </motion.button>
-          ))}
-        </motion.div>
+        {categories.length > 1 && (
+          <motion.div
+            className="flex flex-wrap justify-center gap-2 mb-12"
+            initial={{ opacity: 0, y: 20 }}
+            whileInView={{ opacity: 1, y: 0 }}
+            viewport={{ once: true }}
+          >
+            {categories.map((cat) => (
+              <motion.button
+                key={cat}
+                onClick={() => setActiveCategory(cat)}
+                className={`px-5 py-2 rounded-xl text-sm font-medium transition-all duration-300 cursor-pointer ${
+                  activeCategory === cat
+                    ? 'bg-[var(--color-primary)] text-white shadow-lg shadow-[var(--color-primary)]/25'
+                    : 'bg-[var(--color-bg-card)] text-[var(--color-text-secondary)] border border-[var(--color-border)] hover:border-[var(--color-primary)] hover:text-[var(--color-primary)]'
+                }`}
+                whileHover={{ y: -2 }}
+                whileTap={{ scale: 0.95 }}
+              >
+                {cat}
+              </motion.button>
+            ))}
+          </motion.div>
+        )}
 
-        {/* Grid */}
+        {/* Grid - key forces remount on filter change */}
         <motion.div
+          key={activeCategory}
           className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6"
           variants={staggerContainer}
           initial="hidden"
-          whileInView="visible"
-          viewport={{ once: true, margin: '-50px' }}
+          animate="visible"
           layout
         >
-          <AnimatePresence mode="popLayout">
-            {filtered.map((project) => (
-              <ProjectCard
-                key={project.id}
-                project={project}
-                onClick={() => setSelectedProject(project)}
-              />
-            ))}
-          </AnimatePresence>
+          {visibleProjects.map((project) => (
+            <ProjectCard
+              key={project.id}
+              project={project}
+              onClick={() => setSelectedProject(project)}
+            />
+          ))}
         </motion.div>
 
-        {filtered.length === 0 && (
+        {filtered.length === 0 && displayList.length === 0 && (
           <p className="text-center text-[var(--color-text-tertiary)] mt-12">
-            Nenhum projeto nesta categoria ainda.
+            Nenhum projeto cadastrado ainda.
           </p>
+        )}
+
+        {/* Ver Todos button */}
+        {showAll && (
+          <motion.div
+            className="flex justify-center mt-12"
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ delay: 0.3 }}
+          >
+            <button
+              onClick={() => navigate('/projects')}
+              className="group inline-flex items-center gap-2.5 px-8 py-3.5 rounded-full font-bold text-sm
+                bg-[var(--color-bg-card)] text-[var(--color-text-primary)] border border-[var(--color-border)]
+                hover:border-[var(--color-primary)] hover:text-[var(--color-primary)] hover:shadow-lg
+                transition-all duration-300 cursor-pointer"
+            >
+              Ver todos os projetos ({filtered.length})
+              <ArrowRight size={18} className="group-hover:translate-x-1 transition-transform" />
+            </button>
+          </motion.div>
         )}
       </div>
 

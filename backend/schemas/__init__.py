@@ -37,6 +37,9 @@ class ProfileBase(BaseModel):
     about_subtitle: Optional[str] = None
     about_image_url: Optional[str] = None
     resume_config: Optional[dict] = None
+    resume_languages: Optional[List[Dict[str, Any]]] = None
+    resume_education: Optional[List[Dict[str, Any]]] = None
+    resume_website: Optional[str] = None
     dashboard_section_config: Optional[dict] = None
 
 class ProfileCreate(ProfileBase):

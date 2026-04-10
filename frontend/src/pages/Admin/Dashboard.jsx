@@ -290,7 +290,7 @@ function ProfileEditor() {
   const loadProfile = async () => {
     try {
       const data = await profileApi.get();
-      setProfile(data || { name: '', title: '', bio: '', email: '', location: '', social_links: {}, stats: [], dashboard_metrics: [], dashboard_languages: [], dashboard_activity: [], hero_headlines: [], about_title: '', about_subtitle: '', about_image_url: '', resume_config: {}, dashboard_section_config: {} });
+      setProfile(data || { name: '', title: '', bio: '', email: '', location: '', social_links: {}, stats: [], dashboard_metrics: [], dashboard_languages: [], dashboard_activity: [], hero_headlines: [], about_title: '', about_subtitle: '', about_image_url: '', resume_config: {}, resume_languages: [], resume_education: [], resume_website: '', dashboard_section_config: {} });
     } catch (e) {
       console.error(e);
     } finally {
@@ -317,6 +317,9 @@ function ProfileEditor() {
         about_subtitle: profile.about_subtitle || '',
         about_image_url: profile.about_image_url || '',
         resume_config: profile.resume_config || {},
+        resume_languages: profile.resume_languages || [],
+        resume_education: profile.resume_education || [],
+        resume_website: profile.resume_website || '',
         dashboard_section_config: profile.dashboard_section_config || {},
       });
       alert('Perfil salvo com sucesso!');
@@ -509,6 +512,100 @@ function ProfileEditor() {
             <label className="block text-xs font-medium text-[var(--color-text-tertiary)] mb-1.5">Texto do Botão</label>
             <input type="text" value={profile.resume_config?.buttonText || ''} onChange={(e) => setProfile(p => ({ ...p, resume_config: { ...p.resume_config, buttonText: e.target.value } }))} className={inputCls} placeholder="Gerar Currículo PDF" />
           </div>
+        </div>
+      </AdminSection>
+
+      {/* === CURRÍCULO — WEBSITE === */}
+      <AdminSection title="Currículo — Website" icon={Globe}>
+        <p className="text-xs text-[var(--color-text-tertiary)] mb-3">
+          URL do seu site pessoal/portfólio exibido no currículo.
+        </p>
+        <input type="text" value={profile.resume_website || ''} onChange={(e) => setProfile(p => ({ ...p, resume_website: e.target.value }))} className={inputCls} placeholder="carlosdorth.dev" />
+      </AdminSection>
+
+      {/* === CURRÍCULO — EDUCAÇÃO === */}
+      <AdminSection title="Currículo — Educação" icon={FileText}>
+        <p className="text-xs text-[var(--color-text-tertiary)] mb-3">
+          Adicione sua formação acadêmica que será exibida no currículo.
+        </p>
+        <div className="space-y-4">
+          {(profile.resume_education || []).map((edu, index) => (
+            <div key={index} className="p-4 rounded-xl border border-[var(--color-border)] bg-[var(--color-bg-secondary)] space-y-3">
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                <div>
+                  <label className="block text-xs text-[var(--color-text-tertiary)] mb-1">Curso / Grau</label>
+                  <input type="text" value={edu.title || ''} onChange={(e) => {
+                    const arr = [...(profile.resume_education || [])]; arr[index] = { ...arr[index], title: e.target.value };
+                    setProfile(p => ({ ...p, resume_education: arr }));
+                  }} className={inputCls} placeholder="Análise de Sistemas" />
+                </div>
+                <div>
+                  <label className="block text-xs text-[var(--color-text-tertiary)] mb-1">Instituição</label>
+                  <input type="text" value={edu.institution || ''} onChange={(e) => {
+                    const arr = [...(profile.resume_education || [])]; arr[index] = { ...arr[index], institution: e.target.value };
+                    setProfile(p => ({ ...p, resume_education: arr }));
+                  }} className={inputCls} placeholder="Universidade XYZ" />
+                </div>
+              </div>
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                <div>
+                  <label className="block text-xs text-[var(--color-text-tertiary)] mb-1">Período</label>
+                  <input type="text" value={edu.period || ''} onChange={(e) => {
+                    const arr = [...(profile.resume_education || [])]; arr[index] = { ...arr[index], period: e.target.value };
+                    setProfile(p => ({ ...p, resume_education: arr }));
+                  }} className={inputCls} placeholder="2021 – 2024" />
+                </div>
+                <div className="flex items-end">
+                  <button type="button" onClick={() => {
+                    setProfile(p => ({ ...p, resume_education: p.resume_education.filter((_, i) => i !== index) }));
+                  }} className="p-2 text-[var(--color-error)] hover:bg-[var(--color-error)]/10 rounded-lg cursor-pointer"><Trash2 size={16} /></button>
+                </div>
+              </div>
+              <div>
+                <label className="block text-xs text-[var(--color-text-tertiary)] mb-1">Descrição (opcional)</label>
+                <input type="text" value={edu.description || ''} onChange={(e) => {
+                  const arr = [...(profile.resume_education || [])]; arr[index] = { ...arr[index], description: e.target.value };
+                  setProfile(p => ({ ...p, resume_education: arr }));
+                }} className={inputCls} placeholder="Descrição breve do curso" />
+              </div>
+            </div>
+          ))}
+          <Button variant="secondary" size="sm" icon={Plus} onClick={() => {
+            setProfile(p => ({ ...p, resume_education: [...(p.resume_education || []), { title: '', institution: '', period: '', description: '' }] }));
+          }}>Adicionar Formação</Button>
+        </div>
+      </AdminSection>
+
+      {/* === CURRÍCULO — IDIOMAS === */}
+      <AdminSection title="Currículo — Idiomas" icon={Globe}>
+        <p className="text-xs text-[var(--color-text-tertiary)] mb-3">
+          Idiomas e seus níveis que serão exibidos no currículo.
+        </p>
+        <div className="space-y-3">
+          {(profile.resume_languages || []).map((lang, index) => (
+            <div key={index} className="flex gap-2 items-center">
+              <div className="flex-1">
+                <label className="block text-xs text-[var(--color-text-tertiary)] mb-1">Idioma</label>
+                <input type="text" value={lang.name || ''} onChange={(e) => {
+                  const arr = [...(profile.resume_languages || [])]; arr[index] = { ...arr[index], name: e.target.value };
+                  setProfile(p => ({ ...p, resume_languages: arr }));
+                }} className={inputCls} placeholder="Português" />
+              </div>
+              <div className="flex-1">
+                <label className="block text-xs text-[var(--color-text-tertiary)] mb-1">Nível</label>
+                <input type="text" value={lang.level || ''} onChange={(e) => {
+                  const arr = [...(profile.resume_languages || [])]; arr[index] = { ...arr[index], level: e.target.value };
+                  setProfile(p => ({ ...p, resume_languages: arr }));
+                }} className={inputCls} placeholder="Nativo" />
+              </div>
+              <button type="button" onClick={() => {
+                setProfile(p => ({ ...p, resume_languages: p.resume_languages.filter((_, i) => i !== index) }));
+              }} className="mt-5 p-2 text-[var(--color-error)] hover:bg-[var(--color-error)]/10 rounded-lg cursor-pointer"><Trash2 size={16} /></button>
+            </div>
+          ))}
+          <Button variant="secondary" size="sm" icon={Plus} onClick={() => {
+            setProfile(p => ({ ...p, resume_languages: [...(p.resume_languages || []), { name: '', level: '' }] }));
+          }}>Adicionar Idioma</Button>
         </div>
       </AdminSection>
 
