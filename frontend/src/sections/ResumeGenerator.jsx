@@ -15,14 +15,14 @@ import {
    SEPARATOR & SUBTITLE COMPONENTS
    ══════════════════════════════════════════ */
 function Divider() {
-  return <div className="w-full h-px bg-[var(--color-border)] my-6" />;
+  return <div className="w-full h-px bg-zinc-800 my-6" />;
 }
 
 function ResumeSubtitle({ icon: Icon, children }) {
   return (
     <div className="flex items-center gap-2.5 mb-4">
-      <Icon size={18} className="text-[var(--color-primary)] flex-shrink-0" />
-      <h4 className="text-base font-bold text-[var(--color-text-primary)] uppercase tracking-wider">
+      <Icon size={18} className="text-emerald-400 flex-shrink-0" />
+      <h4 className="text-base font-bold text-white uppercase tracking-wider">
         {children}
       </h4>
     </div>
@@ -31,12 +31,12 @@ function ResumeSubtitle({ icon: Icon, children }) {
 
 function TimelineItem({ title, subtitle, description }) {
   return (
-    <div className="relative pl-6 pb-5 last:pb-0 border-l-2 border-[var(--color-border)]">
-      <div className="absolute left-0 top-1.5 w-2.5 h-2.5 rounded-full bg-[var(--color-primary)] -translate-x-[7px] ring-4 ring-[var(--color-bg-primary)]" />
-      <h5 className="text-sm font-bold text-[var(--color-text-primary)]">{title}</h5>
-      <p className="text-xs text-[var(--color-primary)] font-medium mb-1">{subtitle}</p>
+    <div className="relative pl-6 pb-5 last:pb-0 border-l-2 border-zinc-800">
+      <div className="absolute left-0 top-1.5 w-2.5 h-2.5 rounded-full bg-emerald-400 -translate-x-[7px] ring-4 ring-zinc-950" />
+      <h5 className="text-sm font-bold text-white">{title}</h5>
+      <p className="text-xs text-emerald-400 font-medium mb-1">{subtitle}</p>
       {description && (
-        <p className="text-xs text-[var(--color-text-tertiary)] leading-relaxed">{description}</p>
+        <p className="text-xs text-zinc-400 leading-relaxed">{description}</p>
       )}
     </div>
   );
@@ -142,9 +142,9 @@ export default function ResumeGenerator() {
   }
 
   return (
-    <section id="resume" className="py-28 relative overflow-hidden">
-      <div className="absolute top-0 left-1/2 -translate-x-1/2 w-[600px] h-[600px] rounded-full bg-[var(--color-primary)]/[0.03] blur-[120px]" />
-      <div className="absolute bottom-0 right-0 w-80 h-80 bg-[var(--color-accent)]/[0.03] rounded-full blur-[100px]" />
+    <section id="resume" className="py-28 relative overflow-hidden bg-zinc-950">
+      <div className="absolute top-0 left-1/2 -translate-x-1/2 w-[600px] h-[600px] rounded-full bg-emerald-400/[0.03] blur-[120px]" />
+      <div className="absolute bottom-0 right-0 w-80 h-80 bg-zinc-800/[0.3] rounded-full blur-[100px]" />
 
       <div className="section-container relative z-10">
         <SectionHeader
@@ -167,8 +167,8 @@ export default function ResumeGenerator() {
             onClick={handleExportPDF}
             disabled={isExporting}
             className="group relative inline-flex items-center gap-2.5 px-8 py-3.5 rounded-full font-bold text-sm
-              bg-gradient-to-r from-[var(--color-primary)] to-[var(--color-accent)] text-white
-              shadow-lg hover:shadow-[var(--shadow-glow-lg)] hover:-translate-y-0.5
+              bg-gradient-to-r from-emerald-400 to-cyan-400 text-black
+              shadow-lg hover:-translate-y-0.5
               transition-all duration-300 disabled:opacity-50 disabled:cursor-not-allowed cursor-pointer"
           >
             {isExporting ? (
@@ -188,27 +188,27 @@ export default function ResumeGenerator() {
         >
           <div
             ref={resumeRef}
-            className="max-w-4xl mx-auto rounded-2xl border border-[var(--color-border)] bg-[var(--color-surface)] shadow-xl overflow-hidden"
+            className="max-w-4xl mx-auto rounded-2xl border border-zinc-800/50 bg-zinc-900/50 shadow-xl overflow-hidden"
             style={{ padding: '2.5rem' }}
           >
             {/* 1. HEADER */}
             <div className="mb-2">
-              <h2 className="text-3xl font-bold text-[var(--color-text-primary)]">{displayProfile.name}</h2>
-              <p className="text-lg font-medium text-[var(--color-primary)] mt-1">{displayProfile.title}</p>
+              <h2 className="text-3xl font-bold text-white">{displayProfile.name}</h2>
+              <p className="text-lg font-medium text-emerald-400 mt-1">{displayProfile.title}</p>
               <div className="flex flex-wrap items-center gap-x-5 gap-y-2 mt-3">
                 {displayProfile.email && (
-                  <span className="flex items-center gap-1.5 text-xs text-[var(--color-text-tertiary)]">
-                    <Mail size={13} className="text-[var(--color-primary)]" /> {displayProfile.email}
+                  <span className="flex items-center gap-1.5 text-xs text-zinc-400">
+                    <Mail size={13} className="text-emerald-400" /> {displayProfile.email}
                   </span>
                 )}
                 {displayProfile.location && (
-                  <span className="flex items-center gap-1.5 text-xs text-[var(--color-text-tertiary)]">
-                    <MapPin size={13} className="text-[var(--color-primary)]" /> {displayProfile.location}
+                  <span className="flex items-center gap-1.5 text-xs text-zinc-400">
+                    <MapPin size={13} className="text-emerald-400" /> {displayProfile.location}
                   </span>
                 )}
                 {displayProfile.resume_website && (
-                  <span className="flex items-center gap-1.5 text-xs text-[var(--color-text-tertiary)]">
-                    <Globe size={13} className="text-[var(--color-primary)]" /> {displayProfile.resume_website}
+                  <span className="flex items-center gap-1.5 text-xs text-zinc-400">
+                    <Globe size={13} className="text-emerald-400" /> {displayProfile.resume_website}
                   </span>
                 )}
               </div>
@@ -220,7 +220,7 @@ export default function ResumeGenerator() {
                 <Divider />
                 <div>
                   <ResumeSubtitle icon={FileText}>Resumo Profissional</ResumeSubtitle>
-                  <p className="text-sm text-[var(--color-text-secondary)] leading-relaxed">{displayProfile.bio}</p>
+                  <p className="text-sm text-zinc-400 leading-relaxed">{displayProfile.bio}</p>
                 </div>
               </>
             )}
@@ -273,12 +273,12 @@ export default function ResumeGenerator() {
                   <ResumeSubtitle icon={Code2}>Projetos Relevantes</ResumeSubtitle>
                   <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
                     {projects.slice(0, 4).map((proj) => (
-                      <div key={proj.id} className="rounded-xl p-4 border border-[var(--color-border)] bg-[var(--color-bg-secondary)]">
-                        <h5 className="text-sm font-bold text-[var(--color-text-primary)] mb-1">{proj.title}</h5>
-                        <p className="text-xs text-[var(--color-text-tertiary)] leading-relaxed mb-2 line-clamp-2">{proj.description}</p>
+                      <div key={proj.id} className="rounded-xl p-4 border border-zinc-700/30 bg-zinc-800/30">
+                        <h5 className="text-sm font-bold text-white mb-1">{proj.title}</h5>
+                        <p className="text-xs text-zinc-400 leading-relaxed mb-2 line-clamp-2">{proj.description}</p>
                         <div className="flex flex-wrap gap-1.5">
                           {(proj.tech || '').split(',').slice(0, 3).map((t) => (
-                            <span key={t} className="px-2 py-0.5 text-[10px] font-medium rounded-md bg-[var(--color-primary-soft)] text-[var(--color-primary)] border border-[var(--color-primary)]/10">
+                            <span key={t} className="px-2 py-0.5 text-[10px] font-medium rounded-md bg-zinc-800 text-zinc-300 border border-zinc-700">
                               {t.trim()}
                             </span>
                           ))}
@@ -299,10 +299,10 @@ export default function ResumeGenerator() {
                   <div className="grid grid-cols-1 sm:grid-cols-2 gap-2.5">
                     {certifications.map((cert) => (
                       <div key={cert.id} className="flex items-start gap-2.5">
-                        <div className="w-2 h-2 rounded-full bg-[var(--color-primary)] mt-1.5 flex-shrink-0" />
+                        <div className="w-2 h-2 rounded-full bg-emerald-400 mt-1.5 flex-shrink-0" />
                         <div>
-                          <p className="text-sm font-medium text-[var(--color-text-primary)]">{cert.title}</p>
-                          <p className="text-xs text-[var(--color-text-tertiary)]">{cert.institution} • {cert.date}</p>
+                          <p className="text-sm font-medium text-white">{cert.title}</p>
+                          <p className="text-xs text-zinc-400">{cert.institution} • {cert.date}</p>
                         </div>
                       </div>
                     ))}
@@ -319,7 +319,7 @@ export default function ResumeGenerator() {
                   <ResumeSubtitle icon={Code2}>Tecnologias & Habilidades</ResumeSubtitle>
                   <div className="flex flex-wrap gap-2">
                     {skills.map((skill) => (
-                      <span key={skill.id} className="px-3 py-1 text-xs font-medium rounded-lg bg-[var(--color-bg-secondary)] text-[var(--color-text-secondary)] border border-[var(--color-border)]">
+                      <span key={skill.id} className="px-3 py-1 text-xs font-medium rounded-lg bg-zinc-800 text-zinc-300 border border-zinc-700">
                         {skill.name}
                       </span>
                     ))}
@@ -337,8 +337,8 @@ export default function ResumeGenerator() {
                   <div className="flex flex-wrap gap-x-6 gap-y-2">
                     {languages.map((lang) => (
                       <div key={lang.name} className="flex items-center gap-2">
-                        <span className="text-sm font-medium text-[var(--color-text-primary)]">{lang.name}</span>
-                        <span className="text-xs text-[var(--color-text-tertiary)]">— {lang.level}</span>
+                        <span className="text-sm font-medium text-white">{lang.name}</span>
+                        <span className="text-xs text-zinc-500">— {lang.level}</span>
                       </div>
                     ))}
                   </div>
