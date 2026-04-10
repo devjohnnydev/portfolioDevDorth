@@ -122,21 +122,15 @@ export default function Navbar() {
                 <motion.button
                   key={link.href}
                   onClick={() => scrollToSection(link.href)}
-                  className={`relative px-4 py-2 text-sm font-medium rounded-lg transition-colors cursor-pointer ${
+                  className={`relative px-4 py-2 text-sm font-semibold rounded-lg transition-all duration-300 cursor-pointer ${
                     activeSection === link.href.slice(1)
-                      ? 'text-[var(--color-primary)]'
-                      : 'text-[var(--color-text-secondary)] hover:text-[var(--color-text-primary)]'
+                      ? 'text-[var(--color-primary)] bg-[var(--color-primary)]/15 border border-[var(--color-primary)]/20 shadow-sm'
+                      : 'text-[var(--color-text-secondary)] hover:text-[var(--color-text-primary)] hover:bg-[var(--color-bg-secondary)] border border-transparent'
                   }`}
                   whileHover={{ y: -1 }}
+                  whileTap={{ scale: 0.95 }}
                 >
                   {link.label}
-                  {activeSection === link.href.slice(1) && (
-                    <motion.div
-                      layoutId="navbar-indicator"
-                      className="absolute inset-0 bg-[var(--color-primary-soft)] rounded-lg -z-10"
-                      transition={{ type: 'spring', duration: 0.5 }}
-                    />
-                  )}
                 </motion.button>
               ))}
             </div>
@@ -199,10 +193,10 @@ export default function Navbar() {
                       animate={{ opacity: 1, x: 0 }}
                       transition={{ delay: i * 0.05 }}
                       onClick={() => scrollToSection(link.href)}
-                      className={`w-full text-left px-4 py-3 rounded-xl text-sm font-medium transition-colors cursor-pointer ${
+                      className={`w-full text-left px-4 py-3 rounded-xl text-sm font-semibold transition-all duration-300 cursor-pointer ${
                         activeSection === link.href.slice(1)
-                          ? 'bg-[var(--color-primary-soft)] text-[var(--color-primary)]'
-                          : 'text-[var(--color-text-secondary)] hover:bg-[var(--color-bg-secondary)]'
+                          ? 'bg-[var(--color-primary)]/15 text-[var(--color-primary)] border border-[var(--color-primary)]/20 shadow-sm'
+                          : 'text-[var(--color-text-secondary)] hover:bg-[var(--color-bg-secondary)] hover:text-[var(--color-text-primary)] border border-transparent'
                       }`}
                     >
                       {link.label}

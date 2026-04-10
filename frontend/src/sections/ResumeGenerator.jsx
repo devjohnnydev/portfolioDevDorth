@@ -93,9 +93,11 @@ export default function ResumeGenerator() {
       const el = resumeRef.current;
       const canvas = await html2canvas(el, {
         scale: 2,
-        backgroundColor: '#0B0F19',
+        backgroundColor: '#18181b',
         useCORS: true,
         logging: false,
+        windowWidth: document.documentElement.offsetWidth,
+        windowHeight: document.documentElement.offsetHeight,
       });
 
       const imgData = canvas.toDataURL('image/png');
