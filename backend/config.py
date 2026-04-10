@@ -18,8 +18,9 @@ ACCESS_TOKEN_EXPIRE_MINUTES = int(os.getenv("ACCESS_TOKEN_EXPIRE_MINUTES", "60")
 ADMIN_EMAIL = os.getenv("ADMIN_EMAIL", "admin@portfolio.dev")
 ADMIN_PASSWORD = os.getenv("ADMIN_PASSWORD", "admin123")  # Will be hashed on first run
 
-# CORS
-CORS_ORIGINS = os.getenv("CORS_ORIGINS", "http://localhost:5173,http://localhost:3000").split(",")
+# CORS — use "*" to allow all origins (safe for public portfolio)
+_cors_raw = os.getenv("CORS_ORIGINS", "*")
+CORS_ORIGINS = ["*"] if _cors_raw.strip() == "*" else [o.strip() for o in _cors_raw.split(",") if o.strip()]
 
 # Upload
 UPLOAD_DIR = os.getenv("UPLOAD_DIR", "uploads")

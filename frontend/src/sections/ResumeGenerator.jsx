@@ -126,8 +126,8 @@ export default function ResumeGenerator() {
     }
   };
 
-  // Don't render if no profile data at all
-  if (!isLoading && !profile) return null;
+  // Use a safe fallback so the section NEVER disappears
+  const displayProfile = profile || { name: '', title: '', bio: '', email: '', location: '' };
 
   if (isLoading) {
     return (
@@ -147,10 +147,10 @@ export default function ResumeGenerator() {
       <div className="section-container relative z-10">
         <SectionHeader
           badge="Currículo"
-          title={profile?.resume_config?.titleHighlight
-            ? `${profile.resume_config.titleHighlight} ${profile.resume_config.titleNormal || ''}`
+          title={displayProfile?.resume_config?.titleHighlight
+            ? `${displayProfile.resume_config.titleHighlight} ${displayProfile.resume_config.titleNormal || ''}`
             : 'Currículo Profissional'}
-          subtitle={profile?.resume_config?.subtitle || 'Visualize e exporte meu currículo completo em PDF com um clique.'}
+          subtitle={displayProfile?.resume_config?.subtitle || 'Visualize e exporte meu currículo completo em PDF com um clique.'}
         />
 
         {/* Export Button */}
@@ -172,7 +172,7 @@ export default function ResumeGenerator() {
             {isExporting ? (
               <><Loader2 size={18} className="animate-spin" /> Exportando...</>
             ) : (
-              <><Download size={18} /> {profile?.resume_config?.buttonText || 'Exportar como PDF'}</>
+              <><Download size={18} /> {displayProfile?.resume_config?.buttonText || 'Exportar como PDF'}</>
             )}
           </button>
         </motion.div>
@@ -191,34 +191,34 @@ export default function ResumeGenerator() {
           >
             {/* 1. HEADER */}
             <div className="mb-2">
-              <h2 className="text-3xl font-bold text-[var(--color-text-primary)]">{profile.name}</h2>
-              <p className="text-lg font-medium text-[var(--color-primary)] mt-1">{profile.title}</p>
+              <h2 className="text-3xl font-bold text-[var(--color-text-primary)]">{displayProfile.name}</h2>
+              <p className="text-lg font-medium text-[var(--color-primary)] mt-1">{displayProfile.title}</p>
               <div className="flex flex-wrap items-center gap-x-5 gap-y-2 mt-3">
-                {profile.email && (
+                {displayProfile.email && (
                   <span className="flex items-center gap-1.5 text-xs text-[var(--color-text-tertiary)]">
-                    <Mail size={13} className="text-[var(--color-primary)]" /> {profile.email}
+                    <Mail size={13} className="text-[var(--color-primary)]" /> {displayProfile.email}
                   </span>
                 )}
-                {profile.location && (
+                {displayProfile.location && (
                   <span className="flex items-center gap-1.5 text-xs text-[var(--color-text-tertiary)]">
-                    <MapPin size={13} className="text-[var(--color-primary)]" /> {profile.location}
+                    <MapPin size={13} className="text-[var(--color-primary)]" /> {displayProfile.location}
                   </span>
                 )}
-                {profile.resume_website && (
+                {displayProfile.resume_website && (
                   <span className="flex items-center gap-1.5 text-xs text-[var(--color-text-tertiary)]">
-                    <Globe size={13} className="text-[var(--color-primary)]" /> {profile.resume_website}
+                    <Globe size={13} className="text-[var(--color-primary)]" /> {displayProfile.resume_website}
                   </span>
                 )}
               </div>
             </div>
 
             {/* 2. RESUMO PROFISSIONAL */}
-            {profile.bio && (
+            {displayProfile.bio && (
               <>
                 <Divider />
                 <div>
                   <ResumeSubtitle icon={FileText}>Resumo Profissional</ResumeSubtitle>
-                  <p className="text-sm text-[var(--color-text-secondary)] leading-relaxed">{profile.bio}</p>
+                  <p className="text-sm text-[var(--color-text-secondary)] leading-relaxed">{displayProfile.bio}</p>
                 </div>
               </>
             )}

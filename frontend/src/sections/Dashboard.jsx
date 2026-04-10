@@ -98,9 +98,8 @@ export default function Dashboard() {
     }).catch(console.error).finally(() => setIsLoading(false));
   }, []);
 
-  // Don't render section if no data is configured
+  // Allow rendering even without data so the section doesn't disappear abruptly
   const hasData = metrics.length > 0 || languageStats.length > 0 || recentActivity.length > 0;
-  if (!isLoading && !hasData) return null;
 
   return (
     <section id="dashboard" className="py-24 relative">
@@ -187,6 +186,14 @@ export default function Dashboard() {
             </motion.div>
           )}
         </div>
+
+        {/* Empty State */}
+        {!isLoading && !hasData && (
+          <div className="text-center py-20 bg-[var(--color-bg-secondary)] rounded-3xl border border-dashed border-[var(--color-border)]">
+            <p className="text-[var(--color-text-tertiary)] text-sm mb-2">Nenhum dado configurado no Dashboard.</p>
+            <p className="text-xs text-[var(--color-primary)] opacity-80">Adicione métricas, linguagens ou atividades no Painel de Administração.</p>
+          </div>
+        )}
       </div>
     </section>
   );

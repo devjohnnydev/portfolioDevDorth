@@ -109,8 +109,6 @@ export default function Certifications() {
   const showAll = filteredCerts.length > CERTS_LIMIT;
   const visibleCerts = showAll ? filteredCerts.slice(0, CERTS_LIMIT) : filteredCerts;
 
-  if (displayList.length === 0) return null;
-
   return (
     <section id="certifications" className="py-32 relative bg-[var(--color-bg-primary)] overflow-hidden">
       {/* Background Decor */}
