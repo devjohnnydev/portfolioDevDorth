@@ -36,11 +36,11 @@ export default function Hero() {
   };
 
   // Determine display values
-  const displayName = profile?.name || (isLoading ? '' : 'Carlos Eduardo');
+  const displayName = profile?.name || (isLoading ? '' : 'Carlos Dorth');
   const nameParts = displayName ? displayName.split(' ') : [];
   const firstName = nameParts[0] || '';
   const lastName = nameParts.length > 1 ? nameParts.slice(1).join(' ') : '';
-  const displayTitle = profile?.title || (isLoading ? '' : 'Fullstack Developer | Systems & Scalable Solutions');
+  const displayTitle = profile?.title || (isLoading ? '' : 'Fullstack Developer');
 
   return (
     <section

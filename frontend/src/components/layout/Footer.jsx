@@ -41,21 +41,26 @@ export default function Footer() {
           <div className={`flex items-center gap-2 transition-opacity duration-300 ${isLoading ? 'opacity-0' : 'opacity-100'}`}>
             <div className="w-8 h-8 rounded-lg bg-gradient-to-br from-[var(--color-primary)] to-[var(--color-accent)] flex items-center justify-center">
               <span className="text-white font-bold text-xs">
-                {profile?.name ? profile.name.substring(0, 2).toUpperCase() : ''}
+                {(profile?.name || 'CD').substring(0, 2).toUpperCase()}
               </span>
             </div>
-            <span className="text-lg font-bold">
-              {profile?.name ? (
-                <>
-                  {profile.name.trim().split(' ')[0]}
-                  {profile.name.trim().split(' ').length > 1 && (
+            <div className="flex flex-col">
+              <span className="text-lg font-bold">
+                {!isLoading ? (
+                  <>
+                    {(profile?.name || 'Carlos Dorth').trim().split(' ')[0]}
                     <span className="text-[var(--color-primary)]">
-                      {' ' + profile.name.trim().split(' ').slice(1).join(' ')}
+                      {' ' + (profile?.name || 'Carlos Dorth').trim().split(' ').slice(1).join(' ')}
                     </span>
-                  )}
-                </>
-              ) : null}
-            </span>
+                  </>
+                ) : null}
+              </span>
+              {(profile?.title || !isLoading) && (
+                <span className="text-[var(--color-text-tertiary)] text-xs font-medium">
+                  {profile?.title || 'Fullstack Developer'}
+                </span>
+              )}
+            </div>
           </div>
 
           {/* Links */}

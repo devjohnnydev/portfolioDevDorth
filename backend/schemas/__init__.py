@@ -91,6 +91,8 @@ class CertificationBase(BaseModel):
     description: Optional[str] = None
     badge_url: Optional[str] = None
     credential_url: Optional[str] = None
+    category: Optional[str] = None
+    file_url: Optional[str] = None
 
 class CertificationCreate(CertificationBase):
     pass

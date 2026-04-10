@@ -43,7 +43,7 @@ const tabs = [
 /* ========================================
    CRUD Panel Component
    ======================================== */
-function CrudPanel({ title, items, fields, onSave, onDelete, loading }) {
+function CrudPanel({ title, items, fields, onSave, onDelete, loading, suggestions = [] }) {
   const [editItem, setEditItem] = useState(null);
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [formData, setFormData] = useState({});
@@ -169,13 +169,23 @@ function CrudPanel({ title, items, fields, onSave, onDelete, loading }) {
                     text-[var(--color-text-primary)] text-sm outline-none focus:border-[var(--color-primary)] transition-colors"
                 />
               ) : (
-                <input
-                  type="text"
-                  value={formData[field.key] || ''}
-                  onChange={(e) => setFormData((prev) => ({ ...prev, [field.key]: e.target.value }))}
-                  className="w-full px-3 py-2 rounded-lg bg-[var(--color-bg-secondary)] border border-[var(--color-border)]
-                    text-[var(--color-text-primary)] text-sm outline-none focus:border-[var(--color-primary)] transition-colors"
-                />
+                <>
+                  <input
+                    type="text"
+                    value={formData[field.key] || ''}
+                    onChange={(e) => setFormData((prev) => ({ ...prev, [field.key]: e.target.value }))}
+                    list={`suggestions-${field.key}`}
+                    className="w-full px-3 py-2 rounded-lg bg-[var(--color-bg-secondary)] border border-[var(--color-border)]
+                      text-[var(--color-text-primary)] text-sm outline-none focus:border-[var(--color-primary)] transition-colors"
+                  />
+                  {field.key === 'category' && suggestions.length > 0 && (
+                    <datalist id={`suggestions-${field.key}`}>
+                      {suggestions.map((s) => (
+                        <option key={s} value={s} />
+                      ))}
+                    </datalist>
+                  )}
+                </>
               )}
             </div>
           ))}
@@ -806,9 +816,12 @@ export default function AdminDashboard() {
   const certFields = [
     { key: 'title', label: 'Título', type: 'text' },
     { key: 'institution', label: 'Instituição', type: 'text' },
+    { key: 'category', label: 'Categoria', type: 'text', placeholder: 'Ex: Frontend, Backend, etc.' },
     { key: 'date', label: 'Data', type: 'text' },
     { key: 'description', label: 'Descrição', type: 'textarea' },
     { key: 'credential_url', label: 'URL da credencial', type: 'text' },
+    { key: 'file_url', label: 'Arquivo do Certificado (PDF/Img)', type: 'file' },
+    { key: 'badge_url', label: 'Badge (Ícone)', type: 'file' },
   ];
 
   const expFields = [
@@ -836,7 +849,8 @@ export default function AdminDashboard() {
       case 'skills':
         return <CrudPanel title="Skills" items={skills} fields={skillFields} onSave={handleSaveSkill} onDelete={handleDeleteSkill} />;
       case 'certifications':
-        return <CrudPanel title="Certificações" items={certifications} fields={certFields} onSave={handleSaveCert} onDelete={handleDeleteCert} />;
+        const certCats = [...new Set(certifications.map(c => c.category).filter(Boolean))];
+        return <CrudPanel title="Certificações" items={certifications} fields={certFields} onSave={handleSaveCert} onDelete={handleDeleteCert} suggestions={certCats} />;
       case 'experiences':
         return <CrudPanel title="Experiências" items={experiences} fields={expFields} onSave={handleSaveExp} onDelete={handleDeleteExp} />;
       case 'profile':

@@ -19,6 +19,7 @@ export default function Navbar() {
   const [isMenuOpen, setIsMenuOpen] = useState(false);
   const [activeSection, setActiveSection] = useState('home');
   const [profile, setProfile] = useState(null);
+  const [isLoading, setIsLoading] = useState(true);
   const { isDark, toggleTheme } = useThemeStore();
   const scrollY = useScrollPosition();
 
@@ -28,28 +29,33 @@ export default function Navbar() {
   useEffect(() => {
     profileApi.get().then(data => {
       if (data) setProfile(data);
-    }).catch(console.error);
+    }).catch(console.error).finally(() => setIsLoading(false));
   }, []);
 
-  // Track active section
+  // Track active section via scroll position
   useEffect(() => {
-    const observer = new IntersectionObserver(
-      (entries) => {
-        entries.forEach((entry) => {
-          if (entry.isIntersecting) {
-            setActiveSection(entry.target.id);
+    const handleScroll = () => {
+      const scrollPos = window.scrollY + 120; // offset for navbar height
+      let currentSection = 'home';
+
+      for (const { href } of navLinks) {
+        const el = document.querySelector(href);
+        if (el) {
+          const { top } = el.getBoundingClientRect();
+          const offsetTop = top + window.scrollY;
+          if (scrollPos >= offsetTop) {
+            currentSection = href.slice(1);
           }
-        });
-      },
-      { threshold: 0.3 }
-    );
+        }
+      }
 
-    navLinks.forEach(({ href }) => {
-      const el = document.querySelector(href);
-      if (el) observer.observe(el);
-    });
+      setActiveSection(currentSection);
+    };
 
-    return () => observer.disconnect();
+    window.addEventListener('scroll', handleScroll, { passive: true });
+    handleScroll(); // run once on mount
+
+    return () => window.removeEventListener('scroll', handleScroll);
   }, []);
 
   const scrollToSection = (href) => {
@@ -94,12 +100,15 @@ export default function Navbar() {
                 </span>
               </div>
               <span className="text-lg font-bold text-[var(--color-text-primary)] hidden sm:block">
-                {profile?.name ? (
+                {!isLoading ? (
                   <>
-                    {profile.name.trim().split(' ')[0]}
-                    {profile.name.trim().split(' ').length > 1 && (
-                      <span className="text-[var(--color-primary)]">
-                        {profile.name.trim().split(' ').slice(1).join(' ')}
+                    {(profile?.name || 'Carlos Dorth').trim().split(' ')[0]}
+                    <span className="text-[var(--color-primary)]">
+                      {' ' + (profile?.name || 'Carlos Dorth').trim().split(' ').slice(1).join(' ')}
+                    </span>
+                    {(profile?.title || 'Fullstack Developer') && (
+                      <span className="hidden md:inline text-[var(--color-text-tertiary)] font-normal border-l border-[var(--color-border)] ml-3 pl-3 text-sm">
+                        {profile?.title || 'Fullstack Developer'}
                       </span>
                     )}
                   </>

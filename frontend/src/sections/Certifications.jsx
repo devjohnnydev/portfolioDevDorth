@@ -1,7 +1,9 @@
-import { useState, useEffect } from 'react';
-import { motion } from 'framer-motion';
-import { Award, ExternalLink, Calendar, Building2 } from 'lucide-react';
+import { useState, useEffect, useMemo } from 'react';
+import { motion, AnimatePresence } from 'framer-motion';
+import { Award, ExternalLink, Calendar, Building2, Download, Filter, ChevronRight, Search } from 'lucide-react';
 import SectionHeader from '../components/ui/SectionHeader';
+import Modal from '../components/ui/Modal';
+import Button from '../components/ui/Button';
 import { fadeInUp, staggerContainer } from '../animations/variants';
 import { certificationsApi } from '../services/api';
 
@@ -11,7 +13,8 @@ const mockCertifications = [
     title: 'Python Full Stack',
     institution: 'Plataforma Online',
     date: '2024',
-    credentialUrl: '#',
+    category: 'Fullstack',
+    credential_url: '#',
     description: 'Desenvolvimento completo com Python, incluindo FastAPI, Django e automação.',
   },
   {
@@ -19,7 +22,8 @@ const mockCertifications = [
     title: 'React Avançado',
     institution: 'Curso Especializado',
     date: '2024',
-    credentialUrl: '#',
+    category: 'Frontend',
+    credential_url: '#',
     description: 'Hooks avançados, performance, state management e arquitetura de componentes.',
   },
   {
@@ -27,104 +31,257 @@ const mockCertifications = [
     title: 'Banco de Dados SQL',
     institution: 'Curso Online',
     date: '2023',
-    credentialUrl: '#',
+    category: 'Backend',
+    credential_url: '#',
     description: 'PostgreSQL, modelagem, queries avançadas, otimização e administração.',
   },
 ];
 
-function CertCard({ cert, index }) {
+function CertCard({ cert, index, onClick }) {
   return (
     <motion.div
       variants={fadeInUp}
       custom={index}
-      className="card p-6 group relative overflow-hidden"
-      whileHover={{ y: -4 }}
+      onClick={() => onClick(cert)}
+      className="glass rounded-2xl p-6 group relative overflow-hidden flex flex-col h-full border border-white/10 hover:border-[var(--color-primary)]/30 transition-all duration-500 shadow-xl cursor-pointer"
+      whileHover={{ y: -8 }}
     >
-      {/* Accent line */}
-      <div className="absolute top-0 left-0 right-0 h-1 bg-gradient-to-r from-[var(--color-primary)] to-[var(--color-accent)] transform origin-left scale-x-0 group-hover:scale-x-100 transition-transform duration-500" />
+      {/* Decorative Gradient */}
+      <div className="absolute top-0 right-0 -mr-16 -mt-16 w-32 h-32 bg-[var(--color-primary)]/5 rounded-full blur-3xl group-hover:bg-[var(--color-primary)]/10 transition-colors" />
+      
+      {/* Category Tag */}
+      {cert.category && (
+        <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-[10px] font-bold tracking-wider uppercase bg-[var(--color-primary-soft)] text-[var(--color-primary)] mb-4 w-fit border border-[var(--color-primary)]/10">
+          {cert.category}
+        </span>
+      )}
 
-      {/* Badge icon */}
-      <div className="w-12 h-12 rounded-xl bg-[var(--color-primary-soft)] flex items-center justify-center mb-4
-        group-hover:bg-[var(--color-primary)] transition-colors duration-300">
-        <Award size={22} className="text-[var(--color-primary)] group-hover:text-white transition-colors duration-300" />
+      {/* Main Icon */}
+      <div className="w-14 h-14 rounded-2xl bg-gradient-to-br from-[var(--color-bg-secondary)] to-[var(--color-bg-primary)] border border-[var(--color-border)] flex items-center justify-center mb-5 group-hover:scale-110 group-hover:shadow-[var(--shadow-glow-sm)] transition-all duration-500 overflow-hidden">
+        {cert.badge_url ? (
+          <img src={cert.badge_url.startsWith('/api') ? `${import.meta.env.VITE_API_URL || ''}${cert.badge_url}` : cert.badge_url} alt="" className="w-full h-full object-cover" />
+        ) : (
+          <Award size={24} className="text-[var(--color-primary)]" />
+        )}
       </div>
 
-      {/* Content */}
-      <h3 className="text-lg font-bold text-[var(--color-text-primary)] mb-1 group-hover:text-[var(--color-primary)] transition-colors">
+      <h3 className="text-xl font-bold text-[var(--color-text-primary)] mb-2 group-hover:text-[var(--color-primary)] transition-colors line-clamp-2">
         {cert.title}
       </h3>
 
-      <div className="flex items-center gap-3 mb-3">
-        <span className="flex items-center gap-1 text-xs text-[var(--color-text-tertiary)]">
-          <Building2 size={12} />
+      <div className="flex flex-wrap items-center gap-x-4 gap-y-2 mb-4">
+        <span className="flex items-center gap-1.5 text-xs text-[var(--color-text-tertiary)]">
+          <Building2 size={13} className="text-[var(--color-primary)]" />
           {cert.institution}
         </span>
-        <span className="flex items-center gap-1 text-xs text-[var(--color-text-tertiary)]">
-          <Calendar size={12} />
+        <span className="flex items-center gap-1.5 text-xs text-[var(--color-text-tertiary)]">
+          <Calendar size={13} className="text-[var(--color-primary)]" />
           {cert.date}
         </span>
       </div>
 
-      <p className="text-sm text-[var(--color-text-secondary)] leading-relaxed mb-4 whitespace-pre-wrap">
-        {cert.description}
+      <p className="text-sm text-[var(--color-text-secondary)] leading-relaxed mb-6 line-clamp-3 italic">
+        "{cert.description}"
       </p>
 
-      {cert.credential_url && cert.credential_url !== '#' && (
-        <motion.a
-          href={cert.credential_url}
-          target="_blank"
-          rel="noopener noreferrer"
-          className="inline-flex items-center gap-1.5 text-xs font-semibold text-[var(--color-primary)] hover:underline"
-          whileHover={{ x: 3 }}
+      <div className="mt-auto flex items-center justify-between pt-4 border-t border-white/5">
+        <button
+          className="text-xs font-bold text-[var(--color-primary)] flex items-center gap-1 group/btn hover:underline"
         >
-          Ver credencial <ExternalLink size={12} />
-        </motion.a>
-      )}
-      {cert.credentialUrl && cert.credentialUrl !== '#' && (
-        <motion.a
-          href={cert.credentialUrl}
-          target="_blank"
-          rel="noopener noreferrer"
-          className="inline-flex items-center gap-1.5 text-xs font-semibold text-[var(--color-primary)] hover:underline"
-          whileHover={{ x: 3 }}
-        >
-          Ver credencial <ExternalLink size={12} />
-        </motion.a>
-      )}
+          Mais detalhes <ChevronRight size={14} className="group-hover/btn:translate-x-1 transition-transform" />
+        </button>
+        {cert.credential_url && cert.credential_url !== '#' && (
+          <a
+            href={cert.credential_url}
+            target="_blank"
+            rel="noopener noreferrer"
+            onClick={(e) => e.stopPropagation()}
+            className="p-2 rounded-lg bg-[var(--color-bg-secondary)] text-[var(--color-text-tertiary)] hover:text-[var(--color-primary)] transition-colors cursor-pointer"
+            title="Ver credencial original"
+          >
+            <ExternalLink size={16} />
+          </a>
+        )}
+      </div>
     </motion.div>
   );
 }
 
 export default function Certifications() {
   const [dbCerts, setDbCerts] = useState([]);
+  const [activeCategory, setActiveCategory] = useState('Todas');
+  const [selectedCert, setSelectedCert] = useState(null);
+  const [searchQuery, setSearchQuery] = useState('');
 
   useEffect(() => {
-    certificationsApi.getAll().then(data => setDbCerts(data)).catch(console.error);
+    certificationsApi.getAll()
+      .then(data => setDbCerts(data))
+      .catch(console.error);
   }, []);
 
   const displayList = dbCerts.length > 0 ? dbCerts : mockCertifications;
 
+  const categories = useMemo(() => {
+    const cats = ['Todas', ...new Set(displayList.map(c => c.category?.trim()).filter(Boolean))];
+    return cats;
+  }, [displayList]);
+
+  const filteredCerts = useMemo(() => {
+    return displayList.filter(cert => {
+      const normalizedCertCat = cert.category?.trim().toLowerCase();
+      const normalizedActiveCat = activeCategory?.trim().toLowerCase();
+      
+      const matchesCategory = activeCategory === 'Todas' || normalizedCertCat === normalizedActiveCat;
+      const matchesSearch = cert.title.toLowerCase().includes(searchQuery.toLowerCase()) || 
+                           cert.institution.toLowerCase().includes(searchQuery.toLowerCase());
+      return matchesCategory && matchesSearch;
+    });
+  }, [displayList, activeCategory, searchQuery]);
+
   return (
-    <section id="certifications" className="py-24 bg-[var(--color-bg-secondary)]">
-      <div className="section-container">
+    <section id="certifications" className="py-32 relative bg-[var(--color-bg-primary)] overflow-hidden">
+      {/* Background Decor */}
+      <div className="absolute top-1/2 left-0 w-96 h-96 bg-[var(--color-primary)]/5 rounded-full blur-[120px] -translate-y-1/2 -translate-x-1/2" />
+      <div className="absolute bottom-0 right-0 w-80 h-80 bg-[var(--color-accent)]/5 rounded-full blur-[100px] translate-y-1/4 translate-x-1/4" />
+
+      <div className="section-container relative z-10">
         <SectionHeader
           badge="Certificações"
           title="Aprendizado contínuo"
-          subtitle="Investimento constante em formação e atualização profissional."
+          subtitle="Investimento constante em formação e atualização profissional para entregar excelência tecnológica."
         />
 
+        {/* Filters and Search Bar */}
+        <div className="flex flex-col md:flex-row items-center justify-between gap-6 mb-12">
+          {/* Categories */}
+          <div className="flex items-center gap-2 overflow-x-auto pb-2 md:pb-0 no-scrollbar w-full md:w-auto">
+            <div className="flex items-center gap-2 p-1.5 bg-[var(--color-bg-secondary)] border border-[var(--color-border)] rounded-2xl">
+              {categories.map((cat) => (
+                <button
+                  key={cat}
+                  onClick={() => setActiveCategory(cat)}
+                  className={`px-4 py-1.5 rounded-xl text-xs font-bold transition-all duration-300 min-w-fit cursor-pointer ${
+                    activeCategory === cat
+                      ? 'bg-[var(--color-primary)] text-white shadow-lg shadow-[var(--color-primary)]/25'
+                      : 'text-[var(--color-text-tertiary)] hover:text-[var(--color-text-primary)] hover:bg-[var(--color-bg-primary)]'
+                  }`}
+                >
+                  {cat}
+                </button>
+              ))}
+            </div>
+          </div>
+
+          {/* Search */}
+          <div className="relative w-full md:w-64">
+            <Search size={16} className="absolute left-3 top-1/2 -translate-y-1/2 text-[var(--color-text-tertiary)]" />
+            <input
+              type="text"
+              placeholder="Buscar certificado..."
+              value={searchQuery}
+              onChange={(e) => setSearchQuery(e.target.value)}
+              className="w-full pl-10 pr-4 py-2.5 rounded-2xl bg-[var(--color-bg-secondary)] border border-[var(--color-border)] text-xs outline-none focus:border-[var(--color-primary)] transition-all"
+            />
+          </div>
+        </div>
+
+        {/* Grid */}
         <motion.div
-          className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6"
+          key={`${activeCategory}-${searchQuery}`}
+          className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8"
           variants={staggerContainer}
           initial="hidden"
-          whileInView="visible"
-          viewport={{ once: true, margin: '-50px' }}
+          animate="visible"
         >
-          {displayList.map((cert, i) => (
-            <CertCard key={cert.id} cert={cert} index={i} />
+          {filteredCerts.map((cert, i) => (
+            <CertCard 
+              key={cert.id} 
+              cert={cert} 
+              index={i} 
+              onClick={setSelectedCert}
+            />
           ))}
         </motion.div>
+
+        {filteredCerts.length === 0 && (
+          <motion.div
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            className="text-center py-20 bg-[var(--color-bg-secondary)] rounded-3xl border border-dashed border-[var(--color-border)]"
+          >
+            <p className="text-[var(--color-text-tertiary)]">Nenhuma certificação encontrada nesta categoria.</p>
+          </motion.div>
+        )}
       </div>
+
+      {/* Details Modal */}
+      <Modal 
+        isOpen={!!selectedCert} 
+        onClose={() => setSelectedCert(null)}
+        title="Detalhes da Certificação"
+      >
+        {selectedCert && (
+          <div className="space-y-8">
+            <div className="flex flex-col md:flex-row gap-6 items-start">
+              <div className="w-24 h-24 sm:w-32 sm:h-32 rounded-2xl bg-gradient-to-br from-[var(--color-bg-secondary)] to-[var(--color-bg-primary)] border border-[var(--color-border)] flex items-center justify-center flex-shrink-0 mx-auto md:mx-0 shadow-lg overflow-hidden">
+                {selectedCert.badge_url ? (
+                  <img src={selectedCert.badge_url.startsWith('/api') ? `${import.meta.env.VITE_API_URL || ''}${selectedCert.badge_url}` : selectedCert.badge_url} alt="" className="w-full h-full object-cover" />
+                ) : (
+                  <Award size={48} className="text-[var(--color-primary)]" />
+                )}
+              </div>
+              <div className="flex-1 text-center md:text-left">
+                <h3 className="text-2xl font-bold text-[var(--color-text-primary)] mb-2">{selectedCert.title}</h3>
+                <p className="text-[var(--color-primary)] font-semibold mb-4">{selectedCert.institution}</p>
+                <div className="flex flex-wrap items-center justify-center md:justify-start gap-4">
+                  <span className="px-3 py-1 rounded-full bg-[var(--color-bg-secondary)] border border-[var(--color-border)] text-xs text-[var(--color-text-tertiary)]">
+                    {selectedCert.category || 'Geral'}
+                  </span>
+                  <span className="flex items-center gap-1.5 text-xs text-[var(--color-text-tertiary)]">
+                    <Calendar size={14} />
+                    {selectedCert.date}
+                  </span>
+                </div>
+              </div>
+            </div>
+
+            <div className="p-6 rounded-2xl bg-[var(--color-bg-secondary)] border border-[var(--color-border)]">
+              <h4 className="text-sm font-bold text-[var(--color-text-primary)] mb-3">Sobre esta formação</h4>
+              <p className="text-[var(--color-text-secondary)] text-sm leading-relaxed whitespace-pre-wrap">
+                {selectedCert.description}
+              </p>
+            </div>
+
+            <div className="flex flex-col sm:flex-row gap-3 pt-4 border-t border-[var(--color-border)]">
+              {selectedCert.file_url && (
+                <Button 
+                  variant="primary" 
+                  className="flex-1"
+                  icon={Download}
+                  onClick={() => {
+                    const url = selectedCert.file_url.startsWith('/api') 
+                      ? `${import.meta.env.VITE_API_URL || ''}${selectedCert.file_url}` 
+                      : selectedCert.file_url;
+                    window.open(url, '_blank');
+                  }}
+                >
+                  Baixar Certificado
+                </Button>
+              )}
+              {selectedCert.credential_url && selectedCert.credential_url !== '#' && (
+                <Button 
+                  variant="secondary" 
+                  className="flex-1"
+                  icon={ExternalLink}
+                  onClick={() => window.open(selectedCert.credential_url, '_blank')}
+                >
+                  Ver Credencial Online
+                </Button>
+              )}
+            </div>
+          </div>
+        )}
+      </Modal>
     </section>
   );
 }

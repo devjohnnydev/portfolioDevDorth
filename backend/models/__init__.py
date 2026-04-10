@@ -81,6 +81,8 @@ class Certification(Base):
     description = Column(Text, nullable=True)
     badge_url = Column(String, nullable=True)
     credential_url = Column(String, nullable=True)
+    category = Column(String, nullable=True)
+    file_url = Column(String, nullable=True)
 
 class Experience(Base):
     __tablename__ = "experiences"
