@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react';
 import { motion } from 'framer-motion';
-import { Mail, MessageCircle, Heart, ArrowUpRight, Code, Terminal, MonitorSmartphone } from 'lucide-react';
+import { Mail, MessageCircle, Heart, ArrowUpRight } from 'lucide-react';
 import { profileApi } from '../../services/api';
 
 const Github = ({ size = 24, className = "" }) => (
@@ -16,11 +16,11 @@ const Instagram = ({ size = 24, className = "" }) => (
 );
 
 const socialLinks = [
-  { icon: Github, label: 'GitHub', href: '#' },
-  { icon: Linkedin, label: 'LinkedIn', href: '#' },
-  { icon: Mail, label: 'Email', href: 'mailto:contato@carloseduardo.dev' },
-  { icon: Instagram, label: 'Instagram', href: '#' },
-  { icon: MessageCircle, label: 'WhatsApp', href: '#' },
+  { icon: Github, label: 'GitHub', key: 'github' },
+  { icon: Linkedin, label: 'LinkedIn', key: 'linkedin' },
+  { icon: Mail, label: 'Email', key: 'email' },
+  { icon: Instagram, label: 'Instagram', key: 'instagram' },
+  { icon: MessageCircle, label: 'WhatsApp', key: 'whatsapp' },
 ];
 
 export default function Footer() {
@@ -38,50 +38,50 @@ export default function Footer() {
       <div className="section-container py-12">
         <div className="grid grid-cols-1 md:grid-cols-3 gap-8 items-center">
           {/* Brand */}
-          <div>
-            <div className={`flex items-center gap-2 mb-3 transition-opacity duration-300 ${isLoading ? 'opacity-0' : 'opacity-100'}`}>
-              <div className="w-8 h-8 rounded-lg bg-gradient-to-br from-[var(--color-primary)] to-[var(--color-accent)] flex items-center justify-center">
-                <span className="text-white font-bold text-xs">
-                  {profile?.name ? profile.name.substring(0, 2).toUpperCase() : ''}
-                </span>
-              </div>
-              <span className="text-lg font-bold">
-                {profile?.name ? (
-                  <>
-                    {profile.name.trim().split(' ')[0]}
-                    {profile.name.trim().split(' ').length > 1 && (
-                      <span className="text-[var(--color-primary)]">
-                        {' ' + profile.name.trim().split(' ').slice(1).join(' ')}
-                      </span>
-                    )}
-                  </>
-                ) : null}
+          <div className={`flex items-center gap-2 transition-opacity duration-300 ${isLoading ? 'opacity-0' : 'opacity-100'}`}>
+            <div className="w-8 h-8 rounded-lg bg-gradient-to-br from-[var(--color-primary)] to-[var(--color-accent)] flex items-center justify-center">
+              <span className="text-white font-bold text-xs">
+                {profile?.name ? profile.name.substring(0, 2).toUpperCase() : ''}
               </span>
             </div>
-            <p className={`text-sm text-[var(--color-text-tertiary)] transition-opacity duration-300 ${isLoading ? 'opacity-0' : 'opacity-100'}`}>
-              {profile?.bio || 'Construindo sistemas que escalam ideias.'}
-            </p>
+            <span className="text-lg font-bold">
+              {profile?.name ? (
+                <>
+                  {profile.name.trim().split(' ')[0]}
+                  {profile.name.trim().split(' ').length > 1 && (
+                    <span className="text-[var(--color-primary)]">
+                      {' ' + profile.name.trim().split(' ').slice(1).join(' ')}
+                    </span>
+                  )}
+                </>
+              ) : null}
+            </span>
           </div>
 
           {/* Links */}
           <div className="flex justify-center">
-            <div className="flex items-center gap-3">
-              {socialLinks.map((link) => (
-                <motion.a
-                  key={link.label}
-                  href={link.href}
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  className="p-2.5 rounded-xl text-[var(--color-text-tertiary)]
-                    hover:text-[var(--color-primary)] hover:bg-[var(--color-primary-soft)]
-                    transition-all duration-300"
-                  whileHover={{ y: -3, scale: 1.1 }}
-                  whileTap={{ scale: 0.9 }}
-                  aria-label={link.label}
-                >
-                  <link.icon size={18} />
-                </motion.a>
-              ))}
+            <div className={`flex items-center gap-3 transition-opacity duration-300 ${isLoading ? 'opacity-0' : 'opacity-100'}`}>
+              {socialLinks.map((link) => {
+                const href = profile?.social_links?.[link.key];
+                if (!href || href === '#') return null;
+
+                return (
+                  <motion.a
+                    key={link.label}
+                    href={href}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="p-2.5 rounded-xl text-[var(--color-text-tertiary)]
+                      hover:text-[var(--color-primary)] hover:bg-[var(--color-primary-soft)]
+                      transition-all duration-300"
+                    whileHover={{ y: -3, scale: 1.1 }}
+                    whileTap={{ scale: 0.9 }}
+                    aria-label={link.label}
+                  >
+                    <link.icon size={18} />
+                  </motion.a>
+                );
+              })}
             </div>
           </div>
 
@@ -102,10 +102,10 @@ export default function Footer() {
         {/* Bottom */}
         <div className={`mt-10 pt-6 border-t border-[var(--color-border)] flex flex-col sm:flex-row items-center justify-between gap-4 transition-opacity duration-300 ${isLoading ? 'opacity-0' : 'opacity-100'}`}>
           <p className="text-xs text-[var(--color-text-tertiary)]">
-            © {new Date().getFullYear()} {profile?.name ? profile.name : ''}. Todos os direitos reservados.
+            &copy; {new Date().getFullYear()} {profile?.name ? profile.name : ''}. Todos os direitos reservados.
           </p>
           <p className="text-xs text-[var(--color-text-tertiary)] flex items-center gap-1">
-            Feito com <Heart size={12} className="text-[var(--color-error)] fill-[var(--color-error)]" /> e muito código
+            Feito com <Heart size={12} className="text-[var(--color-error)] fill-[var(--color-error)]" /> e muito codigo
           </p>
         </div>
       </div>

@@ -29,6 +29,7 @@ class Profile(Base):
     hero_headlines = Column(JSON, nullable=True) # ["Construindo sistemas...", ...]
     about_title = Column(String, nullable=True)
     about_subtitle = Column(Text, nullable=True)
+    about_image_url = Column(String, nullable=True)
     resume_config = Column(JSON, nullable=True)
     dashboard_section_config = Column(JSON, nullable=True) # {"badge": "Dashboard", "title": "Métricas & Analytics", "subtitle": "...", "languagesTitle": "...", "activityTitle": "..."}
     updated_at = Column(TIMESTAMP(timezone=True), onupdate=func.now())

@@ -146,11 +146,93 @@ export default function About() {
       <div className="absolute top-1/2 left-0 w-72 h-72 bg-[var(--color-primary)]/5 rounded-full blur-3xl -translate-y-1/2 -translate-x-1/2" />
 
       <div className="section-container">
-        <SectionHeader
-          badge="Sobre Mim"
-          title={profile?.about_title || (isLoading ? '' : 'Transformando ideias em código')}
-          subtitle={profile?.about_subtitle || (isLoading ? '' : 'Desenvolvedor apaixonado por criar soluções que fazem a diferença. Cada projeto é uma oportunidade de superar limites.')}
-        />
+        {/* Glassmorphism Container */}
+        <motion.div 
+          className="relative glass-card p-8 md:p-12 mb-20 rounded-[2.5rem] overflow-hidden border border-white/10"
+          initial={{ opacity: 0, y: 20 }}
+          whileInView={{ opacity: 1, y: 0 }}
+          viewport={{ once: true }}
+          transition={{ duration: 0.8 }}
+        >
+          {/* Decorative background glow inside the glass card */}
+          <div className="absolute -top-24 -right-24 w-64 h-64 bg-[var(--color-primary)]/10 rounded-full blur-3xl pointer-events-none" />
+          <div className="absolute -bottom-24 -left-24 w-64 h-64 bg-[var(--color-accent)]/10 rounded-full blur-3xl pointer-events-none" />
+
+          <div className="grid grid-cols-1 lg:grid-cols-12 gap-12 items-center relative z-10">
+            {/* Left Column: Formatted Text */}
+            <div className="lg:col-span-7 space-y-6">
+              <motion.div
+                initial={{ opacity: 0, x: -20 }}
+                whileInView={{ opacity: 1, x: 0 }}
+                viewport={{ once: true }}
+                transition={{ delay: 0.2 }}
+              >
+                <span className="inline-flex items-center px-4 py-1.5 rounded-full text-xs font-bold uppercase tracking-wider
+                  bg-gradient-to-r from-[var(--color-primary)]/20 to-[var(--color-accent)]/20 
+                  text-[var(--color-primary)] border border-[var(--color-primary)]/20 mb-4">
+                  Sobre Mim
+                </span>
+                <h2 className="text-4xl md:text-5xl font-extrabold text-[var(--color-text-primary)] leading-tight mb-6">
+                  {profile?.about_title || 'Transformando ideias em código'}
+                </h2>
+                <div className="space-y-4 text-lg text-[var(--color-text-secondary)] leading-relaxed
+                  [&>p]:mb-4 last:[&>p]:mb-0">
+                  {profile?.about_subtitle ? (
+                    profile.about_subtitle.split('\n').map((paragraph, i) => (
+                      <p key={i}>{paragraph}</p>
+                    ))
+                  ) : (
+                    <p>Desenvolvedor apaixonado por criar soluções que fazem a diferença. Cada projeto é uma oportunidade de superar limites.</p>
+                  )}
+                </div>
+              </motion.div>
+            </div>
+
+            {/* Right Column: Image with 3D Hover */}
+            <div className="lg:col-span-5 flex justify-center">
+              <motion.div
+                className="relative group perspective-1000"
+                initial={{ opacity: 0, scale: 0.9 }}
+                whileInView={{ opacity: 1, scale: 1 }}
+                viewport={{ once: true }}
+                transition={{ duration: 0.6 }}
+              >
+                {/* Image Container with 3D Tilt Effect */}
+                <motion.div
+                  className="relative w-64 h-64 md:w-80 md:h-80 rounded-3xl overflow-hidden shadow-2xl transition-all duration-500 ease-out"
+                  whileHover={{ 
+                    rotateY: 15, 
+                    rotateX: -10,
+                    scale: 1.05,
+                    boxShadow: "0 25px 50px -12px rgba(var(--color-primary-rgb), 0.5)"
+                  }}
+                  style={{ transformStyle: 'preserve-3d' }}
+                >
+                  {profile?.about_image_url ? (
+                    <img 
+                      src={profile.about_image_url.startsWith('/api') ? `${import.meta.env.VITE_API_URL || ''}${profile.about_image_url}` : profile.about_image_url} 
+                      className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-110" 
+                      alt="About Profile" 
+                    />
+                  ) : (
+                    <div className="w-full h-full bg-gradient-to-br from-[var(--color-primary)] to-[var(--color-accent)] flex items-center justify-center">
+                      <Code2 size={64} className="text-white opacity-20" />
+                    </div>
+                  )}
+
+                  {/* Dynamic Shine Overlay */}
+                  <div className="absolute inset-0 bg-gradient-to-tr from-white/20 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-500 pointer-events-none" />
+                  
+                  {/* Inner Border Glow */}
+                  <div className="absolute inset-0 rounded-3xl border-2 border-white/20 group-hover:border-[var(--color-primary)]/50 transition-colors duration-500 pointer-events-none" />
+                </motion.div>
+
+                {/* Background Glow behind image */}
+                <div className="absolute -inset-4 bg-[var(--color-primary)] opacity-0 group-hover:opacity-20 blur-2xl rounded-full transition-opacity duration-500 -z-10" />
+              </motion.div>
+            </div>
+          </div>
+        </motion.div>
 
         {/* Stats Grid */}
         <motion.div

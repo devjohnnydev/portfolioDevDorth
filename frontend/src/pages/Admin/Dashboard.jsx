@@ -280,7 +280,7 @@ function ProfileEditor() {
   const loadProfile = async () => {
     try {
       const data = await profileApi.get();
-      setProfile(data || { name: '', title: '', bio: '', email: '', location: '', social_links: {}, stats: [], dashboard_metrics: [], dashboard_languages: [], dashboard_activity: [], hero_headlines: [], about_title: '', about_subtitle: '', resume_config: {}, dashboard_section_config: {} });
+      setProfile(data || { name: '', title: '', bio: '', email: '', location: '', social_links: {}, stats: [], dashboard_metrics: [], dashboard_languages: [], dashboard_activity: [], hero_headlines: [], about_title: '', about_subtitle: '', about_image_url: '', resume_config: {}, dashboard_section_config: {} });
     } catch (e) {
       console.error(e);
     } finally {
@@ -305,6 +305,7 @@ function ProfileEditor() {
         hero_headlines: profile.hero_headlines || [],
         about_title: profile.about_title || '',
         about_subtitle: profile.about_subtitle || '',
+        about_image_url: profile.about_image_url || '',
         resume_config: profile.resume_config || {},
         dashboard_section_config: profile.dashboard_section_config || {},
       });
@@ -437,8 +438,8 @@ function ProfileEditor() {
         </div>
       </AdminSection>
 
-      {/* === ABOUT SECTION TEXTS === */}
-      <AdminSection title="Seção Sobre Mim (Textos)" icon={Type}>
+      {/* === ABOUT SECTION === */}
+      <AdminSection title="Seção Sobre Mim" icon={Type}>
         <div>
           <label className="block text-xs font-medium text-[var(--color-text-tertiary)] mb-1.5">Título da seção</label>
           <input type="text" value={profile.about_title || ''} onChange={(e) => setProfile(p => ({ ...p, about_title: e.target.value }))} className={inputCls} placeholder="Transformando ideias em código" />
@@ -446,6 +447,31 @@ function ProfileEditor() {
         <div>
           <label className="block text-xs font-medium text-[var(--color-text-tertiary)] mb-1.5">Subtítulo da seção</label>
           <textarea value={profile.about_subtitle || ''} onChange={(e) => setProfile(p => ({ ...p, about_subtitle: e.target.value }))} rows={2} className={`${inputCls} resize-none`} placeholder="Desenvolvedor apaixonado por criar soluções..." />
+        </div>
+        <div>
+          <label className="block text-xs font-medium text-[var(--color-text-tertiary)] mb-1.5">Imagem (Foto)</label>
+          {profile.about_image_url && (
+            <img 
+              src={profile.about_image_url.startsWith('/api') ? `${import.meta.env.VITE_API_URL || ''}${profile.about_image_url}` : profile.about_image_url} 
+              className="h-32 w-32 object-cover rounded-xl mb-3 border border-[var(--color-border)]" 
+              alt="About Preview" 
+            />
+          )}
+          <input
+            type="file"
+            accept="image/*"
+            onChange={async (e) => {
+              if (e.target.files && e.target.files[0]) {
+                try {
+                  const res = await uploadApi.file(e.target.files[0]);
+                  setProfile(p => ({ ...p, about_image_url: res.url }));
+                } catch (err) {
+                  alert('Erro ao subir imagem');
+                }
+              }
+            }}
+            className={inputCls}
+          />
         </div>
       </AdminSection>
 
