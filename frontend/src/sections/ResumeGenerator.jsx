@@ -1,6 +1,5 @@
 import { useState, useEffect, useRef } from 'react';
 import { motion } from 'framer-motion';
-import { useReactToPrint } from 'react-to-print';
 import {
   Download, FileText, Briefcase, GraduationCap, Award,
   Code2, Globe, Mail, MapPin, Loader2
@@ -44,6 +43,23 @@ function TimelineItem({ title, subtitle, description }) {
 }
 
 /* ══════════════════════════════════════════
+   HELPER: Format YYYY-MM date strings
+   ══════════════════════════════════════════ */
+function formatDate(dateStr) {
+  if (!dateStr) return '';
+  const months = [
+    'Jan', 'Fev', 'Mar', 'Abr', 'Mai', 'Jun',
+    'Jul', 'Ago', 'Set', 'Out', 'Nov', 'Dez'
+  ];
+  const parts = String(dateStr).split('-');
+  if (parts.length === 2) {
+    const monthIdx = parseInt(parts[1], 10) - 1;
+    return `${months[monthIdx] || parts[1]}/${parts[0]}`;
+  }
+  return dateStr;
+}
+
+/* ══════════════════════════════════════════
    MAIN COMPONENT
    ══════════════════════════════════════════ */
 export default function ResumeGenerator() {
@@ -72,7 +88,6 @@ export default function ResumeGenerator() {
       setProjects(proj);
       setCertifications(c);
       setSkills(s);
-      // Education and languages come from the profile
       if (p?.resume_education && p.resume_education.length > 0) {
         setEducation(p.resume_education);
       }
@@ -82,24 +97,329 @@ export default function ResumeGenerator() {
     }).finally(() => setIsLoading(false));
   }, []);
 
-  /* ── PDF Export ── */
-  /* ── Native PDF Export via Browser ── */
-  const handleExportPDF = useReactToPrint({
-    contentRef: resumeRef,
-    documentTitle: `Curriculo_${(profile?.name || 'Profissional').replace(/\s/g, '_')}`,
-    pageStyle: `
-      @page { size: a4; margin: 0; }
-      @media print {
-        body {
-          -webkit-print-color-adjust: exact !important;
-          print-color-adjust: exact !important;
+  /* ══════════════════════════════════════════
+     PROGRAMMATIC PDF EXPORT — jsPDF ONLY
+     ══════════════════════════════════════════ */
+  const handleExportPDF = async () => {
+    if (isExporting) return;
+    setIsExporting(true);
+
+    try {
+      // Dynamic import to avoid SSR/CJS issues
+      const jspdfModule = await import('jspdf');
+      const jsPDF = jspdfModule.jsPDF || jspdfModule.default;
+
+      const pdf = new jsPDF('p', 'mm', 'a4');
+      const pageWidth = pdf.internal.pageSize.getWidth();   // 210
+      const pageHeight = pdf.internal.pageSize.getHeight(); // 297
+      const margin = 20;
+      const contentWidth = pageWidth - margin * 2;
+      let y = margin;
+
+      const style = window.getComputedStyle(document.documentElement);
+      const isDark = document.documentElement.classList.contains('dark');
+      
+      function getRGB(varName, fallbackHex) {
+        const val = style.getPropertyValue(varName).trim();
+        const hex = /^#[0-9A-Fa-f]{3,6}$/.test(val) ? val : fallbackHex;
+        let c = hex.substring(1).split('');
+        if(c.length === 3){
+            c = [c[0], c[0], c[1], c[1], c[2], c[2]];
+        }
+        c = '0x' + c.join('');
+        return [(c>>16)&255, (c>>8)&255, c&255];
+      }
+
+      // ── Dynamic Color palette from System ──
+      const C = {
+        bg:        getRGB('--color-surface', isDark ? '#0F172A' : '#FFFFFF'),
+        white:     getRGB('--color-text-primary', isDark ? '#F1F5F9' : '#0F172A'),
+        green:     getRGB('--color-primary', isDark ? '#3B82F6' : '#2563EB'),
+        gray:      getRGB('--color-text-secondary', isDark ? '#94A3B8' : '#475569'),
+        grayDark:  getRGB('--color-text-tertiary', isDark ? '#64748B' : '#94A3B8'),
+        line:      getRGB('--color-border', isDark ? '#1E293B' : '#E2E8F0'),
+      };
+
+      // ── Draw dark background on current page ──
+      function drawPageBg() {
+        pdf.setFillColor(...C.bg);
+        pdf.rect(0, 0, pageWidth, pageHeight, 'F');
+      }
+
+      // ── Check if we need a new page ──
+      function checkPage(neededSpace) {
+        if (y + neededSpace > pageHeight - margin) {
+          pdf.addPage();
+          drawPageBg();
+          y = margin;
         }
       }
-    `,
-    onBeforePrint: () => setIsExporting(true),
-    onAfterPrint: () => setIsExporting(false),
-    removeAfterPrint: true,
-  });
+
+      // ── Write multiline text with automatic page breaks ──
+      function writeMultiline(text, x, fontSize, color, fontStyle = 'normal', maxW = contentWidth) {
+        pdf.setFont('helvetica', fontStyle);
+        pdf.setFontSize(fontSize);
+        pdf.setTextColor(...color);
+        const lines = pdf.splitTextToSize(text, maxW);
+        const lineHeight = fontSize * 0.45;
+        for (let i = 0; i < lines.length; i++) {
+          checkPage(lineHeight);
+          pdf.text(lines[i], x, y);
+          y += lineHeight;
+        }
+      }
+
+      // ── Draw a horizontal divider line ──
+      function drawDivider() {
+        y += 4;
+        checkPage(2);
+        pdf.setDrawColor(...C.line);
+        pdf.setLineWidth(0.3);
+        pdf.line(margin, y, pageWidth - margin, y);
+        y += 6;
+      }
+
+      // ── Draw a section title with green bullet ──
+      function drawSectionTitle(title) {
+        drawDivider();
+        checkPage(10);
+        // Green bullet circle
+        pdf.setFillColor(...C.green);
+        pdf.circle(margin + 2, y - 1.5, 1.5, 'F');
+        // Title text
+        pdf.setFont('helvetica', 'bold');
+        pdf.setFontSize(11);
+        pdf.setTextColor(...C.white);
+        pdf.text(title.toUpperCase(), margin + 7, y);
+        y += 8;
+      }
+
+      // ══════════════════════════════════════
+      //  START BUILDING THE PDF
+      // ══════════════════════════════════════
+
+      drawPageBg();
+
+      const p = profile || {};
+      const name = p.name || 'Profissional';
+
+      // ─── HEADER ───
+      // Name (centered, large, bold)
+      pdf.setFont('helvetica', 'bold');
+      pdf.setFontSize(24);
+      pdf.setTextColor(...C.white);
+      const nameWidth = pdf.getTextWidth(name);
+      pdf.text(name, (pageWidth - nameWidth) / 2, y);
+      y += 9;
+
+      // Title / Cargo (centered, green)
+      if (p.title) {
+        pdf.setFont('helvetica', 'normal');
+        pdf.setFontSize(12);
+        pdf.setTextColor(...C.green);
+        const titleW = pdf.getTextWidth(p.title);
+        pdf.text(p.title, (pageWidth - titleW) / 2, y);
+        y += 7;
+      }
+
+      // Contact line (centered, gray)
+      const contactParts = [];
+      if (p.email) contactParts.push(p.email);
+      if (p.location) contactParts.push(p.location);
+      if (p.phone) contactParts.push(p.phone);
+      if (contactParts.length > 0) {
+        const contactLine = contactParts.join('  •  ');
+        pdf.setFont('helvetica', 'normal');
+        pdf.setFontSize(9);
+        pdf.setTextColor(...C.gray);
+        const cw = pdf.getTextWidth(contactLine);
+        pdf.text(contactLine, (pageWidth - cw) / 2, y);
+        y += 5;
+      }
+
+      // Links line (centered, gray)
+      const linkParts = [];
+      if (p.linkedin) linkParts.push(p.linkedin);
+      if (p.github) linkParts.push(p.github);
+      if (p.resume_website) linkParts.push(p.resume_website);
+      if (linkParts.length > 0) {
+        const linksLine = linkParts.join('  |  ');
+        pdf.setFont('helvetica', 'normal');
+        pdf.setFontSize(8);
+        pdf.setTextColor(...C.grayDark);
+        const lw = pdf.getTextWidth(linksLine);
+        pdf.text(linksLine, (pageWidth - lw) / 2, y);
+        y += 4;
+      }
+
+      // ─── RESUMO PROFISSIONAL ───
+      if (p.bio) {
+        drawSectionTitle('Resumo Profissional');
+        writeMultiline(p.bio, margin, 9.5, C.gray, 'normal', contentWidth);
+        y += 2;
+      }
+
+      // ─── EXPERIÊNCIA PROFISSIONAL ───
+      if (experiences.length > 0) {
+        drawSectionTitle('Experiência Profissional');
+        experiences.forEach((exp) => {
+          checkPage(20);
+          // Role (white, bold)
+          pdf.setFont('helvetica', 'bold');
+          pdf.setFontSize(10);
+          pdf.setTextColor(...C.white);
+          pdf.text(exp.title || '', margin, y);
+          y += 5;
+          // Company • Period (green)
+          const subLine = [exp.company, exp.period].filter(Boolean).join(' • ');
+          if (subLine) {
+            pdf.setFont('helvetica', 'normal');
+            pdf.setFontSize(9);
+            pdf.setTextColor(...C.green);
+            pdf.text(subLine, margin, y);
+            y += 5;
+          }
+          // Description (gray, multiline)
+          if (exp.description) {
+            writeMultiline(exp.description, margin, 9, C.gray, 'normal', contentWidth);
+          }
+          y += 4;
+        });
+      }
+
+      // ─── EDUCAÇÃO ───
+      if (education.length > 0) {
+        drawSectionTitle('Educação');
+        education.forEach((edu) => {
+          checkPage(14);
+          // Degree (white, bold)
+          pdf.setFont('helvetica', 'bold');
+          pdf.setFontSize(10);
+          pdf.setTextColor(...C.white);
+          pdf.text(edu.title || edu.degree || '', margin, y);
+          y += 5;
+          // Institution • Period (green)
+          const subLine = [edu.institution, edu.period].filter(Boolean).join(' • ');
+          if (subLine) {
+            pdf.setFont('helvetica', 'normal');
+            pdf.setFontSize(9);
+            pdf.setTextColor(...C.green);
+            pdf.text(subLine, margin, y);
+            y += 5;
+          }
+          if (edu.description) {
+            writeMultiline(edu.description, margin, 9, C.gray, 'normal', contentWidth);
+          }
+          y += 3;
+        });
+      }
+
+      // ─── PROJETOS RELEVANTES ───
+      if (projects.length > 0) {
+        drawSectionTitle('Projetos Relevantes');
+        projects.slice(0, 6).forEach((proj) => {
+          checkPage(18);
+          // Project name (white, bold)
+          pdf.setFont('helvetica', 'bold');
+          pdf.setFontSize(10);
+          pdf.setTextColor(...C.white);
+          pdf.text(proj.title || proj.name || '', margin, y);
+          y += 5;
+          // Description (gray, multiline)
+          if (proj.description) {
+            writeMultiline(proj.description, margin, 9, C.gray, 'normal', contentWidth);
+          }
+          // Technologies (green, small)
+          const techStr = proj.tech || (proj.technologies ? proj.technologies.join(' • ') : '');
+          if (techStr) {
+            y += 1;
+            checkPage(5);
+            pdf.setFont('helvetica', 'normal');
+            pdf.setFontSize(8);
+            pdf.setTextColor(...C.green);
+            pdf.text(techStr.split(',').join(' • ').trim(), margin, y);
+            y += 4;
+          }
+          y += 3;
+        });
+      }
+
+      // ─── CERTIFICAÇÕES ───
+      if (certifications.length > 0) {
+        drawSectionTitle('Certificações');
+        certifications.forEach((cert) => {
+          checkPage(12);
+          // Green bullet
+          pdf.setFillColor(...C.green);
+          pdf.circle(margin + 1.5, y - 1.2, 1, 'F');
+          // Name (white)
+          pdf.setFont('helvetica', 'normal');
+          pdf.setFontSize(9.5);
+          pdf.setTextColor(...C.white);
+          pdf.text(cert.title || cert.name || '', margin + 5, y);
+          y += 4.5;
+          // Institution • Date (gray)
+          const certSub = [cert.institution, formatDate(cert.date)].filter(Boolean).join(' • ');
+          if (certSub) {
+            pdf.setFont('helvetica', 'normal');
+            pdf.setFontSize(8);
+            pdf.setTextColor(...C.grayDark);
+            pdf.text(certSub, margin + 5, y);
+            y += 5;
+          }
+        });
+      }
+
+      // ─── TECNOLOGIAS & HABILIDADES ───
+      if (skills.length > 0) {
+        drawSectionTitle('Tecnologias & Habilidades');
+        const skillNames = skills.map((s) => s.name || s).filter(Boolean);
+        const skillLine = skillNames.join('  •  ');
+        writeMultiline(skillLine, margin, 9, C.gray, 'normal', contentWidth);
+        y += 2;
+      }
+
+      // ─── IDIOMAS ───
+      if (languages.length > 0) {
+        drawSectionTitle('Idiomas');
+        checkPage(8);
+        const langParts = languages.map((l) => `${l.name} — ${l.level}`);
+        const langLine = langParts.join('   |   ');
+        pdf.setFont('helvetica', 'normal');
+        pdf.setFontSize(9.5);
+        pdf.setTextColor(...C.white);
+        pdf.text(langLine, margin, y);
+        y += 5;
+      }
+
+      // ═══════════════════════════════════
+      //  FOOTER ON EVERY PAGE
+      // ═══════════════════════════════════
+      const totalPages = pdf.internal.getNumberOfPages();
+      for (let i = 1; i <= totalPages; i++) {
+        pdf.setPage(i);
+        pdf.setFont('helvetica', 'normal');
+        pdf.setFontSize(7);
+        pdf.setTextColor(...C.grayDark);
+        // Left: Name — Currículo Profissional
+        pdf.text(`${name} — Currículo Profissional`, margin, pageHeight - 8);
+        // Right: Página X de Y
+        const pageText = `Página ${i} de ${totalPages}`;
+        const ptw = pdf.getTextWidth(pageText);
+        pdf.text(pageText, pageWidth - margin - ptw, pageHeight - 8);
+      }
+
+      // ── Save ──
+      const safeName = name.replace(/\s+/g, '-').toLowerCase();
+      pdf.save(`curriculo-${safeName}.pdf`);
+
+    } catch (err) {
+      console.error('PDF export error:', err);
+      alert('Erro ao exportar PDF. Tente novamente.');
+    } finally {
+      setIsExporting(false);
+    }
+  };
 
   // Use a safe fallback so the section NEVER disappears
   const displayProfile = profile || { name: '', title: '', bio: '', email: '', location: '' };
