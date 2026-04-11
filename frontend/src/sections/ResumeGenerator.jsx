@@ -87,29 +87,28 @@ export default function ResumeGenerator() {
     setIsExporting(true);
 
     try {
-      const html2canvas = (await import('html2canvas')).default;
+      const { toPng } = await import('html-to-image');
       const { jsPDF } = await import('jspdf');
 
       const el = resumeRef.current;
       const style = getComputedStyle(document.documentElement);
       const isDark = document.documentElement.classList.contains('dark');
       const fallbackBg = isDark ? '#0F172A' : '#FFFFFF';
-      const bgColor = style.getPropertyValue('--color-surface').trim() || fallbackBg;
+      const bgColor = style.getPropertyValue('--color-bg-primary').trim() || fallbackBg;
 
-      const canvas = await html2canvas(el, {
-        scale: 2,
+      const imgData = await toPng(el, {
+        pixelRatio: 2,
         backgroundColor: bgColor,
-        useCORS: true,
-        logging: false,
-        windowWidth: document.documentElement.offsetWidth,
-        windowHeight: document.documentElement.offsetHeight,
+        style: { margin: '0' }
       });
 
-      const imgData = canvas.toDataURL('image/png');
       const pdf = new jsPDF('p', 'mm', 'a4');
       const pdfWidth = pdf.internal.pageSize.getWidth();
       const pdfHeight = pdf.internal.pageSize.getHeight();
-      const totalPdfHeight = (canvas.height * pdfWidth) / canvas.width;
+      
+      const elWidth = el.offsetWidth;
+      const elHeight = el.offsetHeight;
+      const totalPdfHeight = (elHeight * pdfWidth) / elWidth;
 
       let heightLeft = totalPdfHeight;
       let position = 0;
