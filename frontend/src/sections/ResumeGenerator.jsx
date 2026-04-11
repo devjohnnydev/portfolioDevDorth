@@ -176,21 +176,21 @@ export default function ResumeGenerator() {
         pdf.setDrawColor(...C.line);
         pdf.setLineWidth(0.3);
         pdf.line(margin, y, pageWidth - margin, y);
-        y += 6;
+        y += 7;
       }
 
       // ── Draw a section title with green bullet ──
       function drawSectionTitle(title) {
         drawDivider();
-        checkPage(10);
-        // Green bullet circle
+        checkPage(12);
+        // Green bullet circle aligned with text
         pdf.setFillColor(...C.green);
-        pdf.circle(margin + 2, y - 1.5, 1.5, 'F');
-        // Title text
+        pdf.circle(margin + 1.5, y - 1.5, 1.8, 'F');
+        // Title text (Title Case, Larger)
         pdf.setFont('helvetica', 'bold');
-        pdf.setFontSize(11);
+        pdf.setFontSize(14);
         pdf.setTextColor(...C.white);
-        pdf.text(title.toUpperCase(), margin + 7, y);
+        pdf.text(title, margin + 6, y);
         y += 8;
       }
 
@@ -206,16 +206,16 @@ export default function ResumeGenerator() {
       // ─── HEADER ───
       // Name (centered, large, bold)
       pdf.setFont('helvetica', 'bold');
-      pdf.setFontSize(24);
+      pdf.setFontSize(26);
       pdf.setTextColor(...C.white);
       const nameWidth = pdf.getTextWidth(name);
       pdf.text(name, (pageWidth - nameWidth) / 2, y);
       y += 9;
 
-      // Title / Cargo (centered, green)
+      // Title / Cargo (centered, green, slightly larger)
       if (p.title) {
         pdf.setFont('helvetica', 'normal');
-        pdf.setFontSize(12);
+        pdf.setFontSize(13);
         pdf.setTextColor(...C.green);
         const titleW = pdf.getTextWidth(p.title);
         pdf.text(p.title, (pageWidth - titleW) / 2, y);
@@ -230,14 +230,14 @@ export default function ResumeGenerator() {
       if (contactParts.length > 0) {
         const contactLine = contactParts.join('  •  ');
         pdf.setFont('helvetica', 'normal');
-        pdf.setFontSize(9);
+        pdf.setFontSize(9.5);
         pdf.setTextColor(...C.gray);
         const cw = pdf.getTextWidth(contactLine);
         pdf.text(contactLine, (pageWidth - cw) / 2, y);
         y += 5;
       }
 
-      // Links line (centered, gray)
+      // Links line (centered, green to match image)
       const linkParts = [];
       if (p.linkedin) linkParts.push(p.linkedin);
       if (p.github) linkParts.push(p.github);
@@ -245,8 +245,8 @@ export default function ResumeGenerator() {
       if (linkParts.length > 0) {
         const linksLine = linkParts.join('  |  ');
         pdf.setFont('helvetica', 'normal');
-        pdf.setFontSize(8);
-        pdf.setTextColor(...C.grayDark);
+        pdf.setFontSize(8.5);
+        pdf.setTextColor(...C.green);  // Fixed: Colored links like image
         const lw = pdf.getTextWidth(linksLine);
         pdf.text(linksLine, (pageWidth - lw) / 2, y);
         y += 4;
@@ -255,18 +255,18 @@ export default function ResumeGenerator() {
       // ─── RESUMO PROFISSIONAL ───
       if (p.bio) {
         drawSectionTitle('Resumo Profissional');
-        writeMultiline(p.bio, margin, 9.5, C.gray, 'normal', contentWidth);
-        y += 2;
+        writeMultiline(p.bio, margin, 10, C.gray, 'normal', contentWidth); // Font size 10
+        y += 3;
       }
 
       // ─── EXPERIÊNCIA PROFISSIONAL ───
       if (experiences.length > 0) {
         drawSectionTitle('Experiência Profissional');
         experiences.forEach((exp) => {
-          checkPage(20);
+          checkPage(24);
           // Role (white, bold)
           pdf.setFont('helvetica', 'bold');
-          pdf.setFontSize(10);
+          pdf.setFontSize(11.5); // Fixed: Job title needs to be larger!
           pdf.setTextColor(...C.white);
           pdf.text(exp.title || '', margin, y);
           y += 5;
@@ -274,16 +274,16 @@ export default function ResumeGenerator() {
           const subLine = [exp.company, exp.period].filter(Boolean).join(' • ');
           if (subLine) {
             pdf.setFont('helvetica', 'normal');
-            pdf.setFontSize(9);
+            pdf.setFontSize(10);
             pdf.setTextColor(...C.green);
             pdf.text(subLine, margin, y);
             y += 5;
           }
           // Description (gray, multiline)
           if (exp.description) {
-            writeMultiline(exp.description, margin, 9, C.gray, 'normal', contentWidth);
+            writeMultiline(exp.description, margin, 9.5, C.gray, 'normal', contentWidth);
           }
-          y += 4;
+          y += 5; // Spacing between jobs
         });
       }
 
@@ -291,10 +291,10 @@ export default function ResumeGenerator() {
       if (education.length > 0) {
         drawSectionTitle('Educação');
         education.forEach((edu) => {
-          checkPage(14);
+          checkPage(16);
           // Degree (white, bold)
           pdf.setFont('helvetica', 'bold');
-          pdf.setFontSize(10);
+          pdf.setFontSize(11.5);
           pdf.setTextColor(...C.white);
           pdf.text(edu.title || edu.degree || '', margin, y);
           y += 5;
@@ -302,15 +302,15 @@ export default function ResumeGenerator() {
           const subLine = [edu.institution, edu.period].filter(Boolean).join(' • ');
           if (subLine) {
             pdf.setFont('helvetica', 'normal');
-            pdf.setFontSize(9);
+            pdf.setFontSize(10);
             pdf.setTextColor(...C.green);
             pdf.text(subLine, margin, y);
             y += 5;
           }
           if (edu.description) {
-            writeMultiline(edu.description, margin, 9, C.gray, 'normal', contentWidth);
+            writeMultiline(edu.description, margin, 9.5, C.gray, 'normal', contentWidth);
           }
-          y += 3;
+          y += 4;
         });
       }
 
@@ -318,29 +318,29 @@ export default function ResumeGenerator() {
       if (projects.length > 0) {
         drawSectionTitle('Projetos Relevantes');
         projects.slice(0, 6).forEach((proj) => {
-          checkPage(18);
+          checkPage(20);
           // Project name (white, bold)
           pdf.setFont('helvetica', 'bold');
-          pdf.setFontSize(10);
+          pdf.setFontSize(11);
           pdf.setTextColor(...C.white);
           pdf.text(proj.title || proj.name || '', margin, y);
           y += 5;
           // Description (gray, multiline)
           if (proj.description) {
-            writeMultiline(proj.description, margin, 9, C.gray, 'normal', contentWidth);
+            writeMultiline(proj.description, margin, 9.5, C.gray, 'normal', contentWidth);
           }
           // Technologies (green, small)
           const techStr = proj.tech || (proj.technologies ? proj.technologies.join(' • ') : '');
           if (techStr) {
-            y += 1;
-            checkPage(5);
+            y += 0.5;
+            checkPage(6);
             pdf.setFont('helvetica', 'normal');
-            pdf.setFontSize(8);
+            pdf.setFontSize(8.5);
             pdf.setTextColor(...C.green);
             pdf.text(techStr.split(',').join(' • ').trim(), margin, y);
             y += 4;
           }
-          y += 3;
+          y += 4; // Spacing between projects
         });
       }
 
