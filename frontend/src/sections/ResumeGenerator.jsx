@@ -157,15 +157,24 @@ export default function ResumeGenerator() {
 
       // ── Write multiline text with automatic page breaks ──
       function writeMultiline(text, x, fontSize, color, fontStyle = 'normal', maxW = contentWidth) {
+        if (!text) return;
         pdf.setFont('helvetica', fontStyle);
         pdf.setFontSize(fontSize);
         pdf.setTextColor(...color);
-        const lines = pdf.splitTextToSize(text, maxW);
+        // Replace excessive newlines with a single newline to prevent giant gaps
+        const cleanText = text.replace(/\n{2,}/g, '\n\n');
+        const lines = pdf.splitTextToSize(cleanText, maxW);
         const lineHeight = fontSize * 0.45;
+        
         for (let i = 0; i < lines.length; i++) {
           checkPage(lineHeight);
-          pdf.text(lines[i], x, y);
-          y += lineHeight;
+          if (lines[i].trim() === '') {
+            // Give only a small gap for paragraph separation
+            y += lineHeight * 0.5;
+          } else {
+            pdf.text(lines[i], x, y);
+            y += lineHeight;
+          }
         }
       }
 
