@@ -224,11 +224,11 @@ export default function ResumeGenerator() {
       // Title / Cargo (centered, green, slightly larger)
       if (p.title) {
         pdf.setFont('helvetica', 'normal');
-        pdf.setFontSize(13);
+        pdf.setFontSize(15); // Slightly larger for better prominence
         pdf.setTextColor(...C.green);
-        const titleW = pdf.getTextWidth(p.title);
-        pdf.text(p.title, (pageWidth - titleW) / 2, y);
-        y += 7;
+        const titleW = pdf.getTextWidth(p.title.toUpperCase()); // Optional: uppercase for impact
+        pdf.text(p.title.toUpperCase(), (pageWidth - titleW) / 2, y);
+        y += 8;
       }
 
       // Contact line (centered, gray)
@@ -255,10 +255,10 @@ export default function ResumeGenerator() {
         const linksLine = linkParts.join('  |  ');
         pdf.setFont('helvetica', 'normal');
         pdf.setFontSize(8.5);
-        pdf.setTextColor(...C.green);  // Fixed: Colored links like image
+        pdf.setTextColor(...C.green);
         const lw = pdf.getTextWidth(linksLine);
         pdf.text(linksLine, (pageWidth - lw) / 2, y);
-        y += 4;
+        y += 8; // Extra space after header
       }
 
       // ─── RESUMO PROFISSIONAL ───
@@ -494,10 +494,10 @@ export default function ResumeGenerator() {
             style={{ padding: '2.5rem' }}
           >
             {/* 1. HEADER */}
-            <div className="mb-2">
-              <h2 className="text-3xl font-bold text-[var(--color-text-primary)]">{displayProfile.name}</h2>
-              <p className="text-lg font-medium text-[var(--color-primary)] mt-1">{displayProfile.title}</p>
-              <div className="flex flex-wrap items-center gap-x-5 gap-y-2 mt-3">
+            <div className="mb-6 text-center">
+              <h2 className="text-4xl font-bold text-[var(--color-text-primary)] mb-2">{displayProfile.name}</h2>
+              <p className="text-xl font-semibold text-[var(--color-primary)] uppercase tracking-widest">{displayProfile.title}</p>
+              <div className="flex flex-wrap items-center justify-center gap-x-5 gap-y-2 mt-4">
                 {displayProfile.email && (
                   <span className="flex items-center gap-1.5 text-xs text-[var(--color-text-tertiary)]">
                     <Mail size={13} className="text-[var(--color-primary)]" /> {displayProfile.email}
