@@ -1,5 +1,6 @@
 import { useState, useEffect, useRef } from 'react';
 import { motion } from 'framer-motion';
+import { useReactToPrint } from 'react-to-print';
 import {
   Download, FileText, Briefcase, GraduationCap, Award,
   Code2, Globe, Mail, MapPin, Loader2
@@ -82,56 +83,23 @@ export default function ResumeGenerator() {
   }, []);
 
   /* ── PDF Export ── */
-  const handleExportPDF = async () => {
-    if (isExporting || !resumeRef.current) return;
-    setIsExporting(true);
-
-    try {
-      const html2canvas = (await import('html2canvas-pro')).default;
-      const { jsPDF } = await import('jspdf');
-
-      const el = resumeRef.current;
-      const style = getComputedStyle(document.documentElement);
-      const isDark = document.documentElement.classList.contains('dark');
-      const fallbackBg = isDark ? '#0F172A' : '#FFFFFF';
-      const bgColor = style.getPropertyValue('--color-surface').trim() || fallbackBg;
-
-      const canvas = await html2canvas(el, {
-        scale: 2,
-        backgroundColor: bgColor,
-        useCORS: true,
-        logging: false,
-        windowWidth: document.documentElement.offsetWidth,
-        windowHeight: document.documentElement.offsetHeight,
-      });
-
-      const imgData = canvas.toDataURL('image/png', 1.0);
-      const pdf = new jsPDF('p', 'mm', 'a4');
-      const pdfWidth = pdf.internal.pageSize.getWidth();
-      const pdfHeight = pdf.internal.pageSize.getHeight();
-      
-      const totalPdfHeight = (canvas.height * pdfWidth) / canvas.width;
-      let heightLeft = totalPdfHeight;
-      let position = 0;
-
-      pdf.addImage(imgData, 'PNG', 0, position, pdfWidth, totalPdfHeight);
-      heightLeft -= pdfHeight;
-
-      while (heightLeft > 0) {
-        position -= pdfHeight;
-        pdf.addPage();
-        pdf.addImage(imgData, 'PNG', 0, position, pdfWidth, totalPdfHeight);
-        heightLeft -= pdfHeight;
+  /* ── Native PDF Export via Browser ── */
+  const handleExportPDF = useReactToPrint({
+    contentRef: resumeRef,
+    documentTitle: `Curriculo_${(profile?.name || 'Profissional').replace(/\s/g, '_')}`,
+    pageStyle: `
+      @page { size: a4; margin: 0; }
+      @media print {
+        body {
+          -webkit-print-color-adjust: exact !important;
+          print-color-adjust: exact !important;
+        }
       }
-
-      pdf.save(`Curriculo_${(profile?.name || 'Profissional').replace(/\s/g, '_')}.pdf`);
-    } catch (err) {
-      console.error('PDF export error:', err);
-      alert('Erro ao exportar PDF. Tente novamente.');
-    } finally {
-      setIsExporting(false);
-    }
-  };
+    `,
+    onBeforePrint: () => setIsExporting(true),
+    onAfterPrint: () => setIsExporting(false),
+    removeAfterPrint: true,
+  });
 
   // Use a safe fallback so the section NEVER disappears
   const displayProfile = profile || { name: '', title: '', bio: '', email: '', location: '' };
