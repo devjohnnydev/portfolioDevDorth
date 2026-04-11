@@ -58,6 +58,7 @@ class Project(Base):
     long_description = Column(Text, nullable=True)
     category = Column(String, nullable=False)
     image_url = Column(String, nullable=True)
+    images = Column(JSON, nullable=True) # list of images for gallery
     tech = Column(String, nullable=True) # comma separated tech stack for simplicity
     github_url = Column(String, nullable=True)
     demo_url = Column(String, nullable=True)

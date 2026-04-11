@@ -57,6 +57,7 @@ class ProjectBase(BaseModel):
     long_description: Optional[str] = None
     category: str
     image_url: Optional[str] = None
+    images: Optional[List[str]] = None
     tech: Optional[str] = None
     github_url: Optional[str] = None
     demo_url: Optional[str] = None

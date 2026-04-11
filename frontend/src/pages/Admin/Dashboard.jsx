@@ -4,7 +4,7 @@ import { useNavigate } from 'react-router-dom';
 import {
   LayoutDashboard, FolderKanban, Zap, Award, Briefcase, User, LogOut,
   Plus, Pencil, Trash2, Save, X, ChevronRight, Menu, Globe, Mail,
-  MessageCircle, Hash, Palette, Type, FileText
+  MessageCircle, Hash, Palette, Type, FileText, ArrowUp, ArrowDown
 } from 'lucide-react';
 import { useAdminStore } from '../../stores';
 import Button from '../../components/ui/Button';
@@ -159,6 +159,82 @@ function CrudPanel({ title, items, fields, onSave, onDelete, loading, suggestion
                     }}
                     className="w-full px-3 py-2 rounded-lg bg-[var(--color-bg-secondary)] border border-[var(--color-border)] text-sm outline-none focus:border-[var(--color-primary)] transition-colors"
                   />
+                </div>
+              ) : field.type === 'gallery' ? (
+                <div className="space-y-4">
+                  <div className="grid grid-cols-2 sm:grid-cols-3 gap-3">
+                    {(formData[field.key] || []).map((url, idx) => (
+                      <div key={idx} className="relative aspect-video rounded-lg overflow-hidden border border-[var(--color-border)] group">
+                        <img 
+                          src={url.startsWith('/api') ? `${import.meta.env.VITE_API_URL || ''}${url}` : url} 
+                          className="w-full h-full object-cover" 
+                          alt={`Gallery ${idx}`}
+                        />
+                        <div className="absolute inset-0 bg-black/60 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center gap-1">
+                          <button 
+                            disabled={idx === 0}
+                            onClick={() => {
+                              const list = [...formData[field.key]];
+                              const [removed] = list.splice(idx, 1);
+                              list.splice(idx - 1, 0, removed);
+                              setFormData(prev => ({ ...prev, [field.key]: list }));
+                            }}
+                            className="p-1.5 rounded-lg bg-white/20 hover:bg-[var(--color-primary)] text-white transition-colors disabled:opacity-30"
+                          >
+                            <ArrowUp size={14} />
+                          </button>
+                          <button 
+                            disabled={idx === formData[field.key].length - 1}
+                            onClick={() => {
+                              const list = [...formData[field.key]];
+                              const [removed] = list.splice(idx, 1);
+                              list.splice(idx + 1, 0, removed);
+                              setFormData(prev => ({ ...prev, [field.key]: list }));
+                            }}
+                            className="p-1.5 rounded-lg bg-white/20 hover:bg-[var(--color-primary)] text-white transition-colors disabled:opacity-30"
+                          >
+                            <ArrowDown size={14} />
+                          </button>
+                          <button 
+                            onClick={() => {
+                              const list = formData[field.key].filter((_, i) => i !== idx);
+                              setFormData(prev => ({ ...prev, [field.key]: list }));
+                            }}
+                            className="p-1.5 rounded-lg bg-white/20 hover:bg-red-500 text-white transition-colors"
+                          >
+                            <Trash2 size={14} />
+                          </button>
+                        </div>
+                        <div className="absolute top-1 left-1 px-1.5 rounded bg-black/50 text-[10px] text-white">
+                          #{idx + 1}
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                  <input
+                    type="file"
+                    accept="image/*"
+                    multiple
+                    onChange={async (e) => {
+                      if (e.target.files) {
+                        try {
+                          const uploaded = [];
+                          for (const file of e.target.files) {
+                            const res = await uploadApi.file(file);
+                            uploaded.push(res.url);
+                          }
+                          setFormData((prev) => ({ 
+                            ...prev, 
+                            [field.key]: [...(prev[field.key] || []), ...uploaded] 
+                          }));
+                        } catch (err) {
+                           alert('Erro ao subir arquivos');
+                        }
+                      }
+                    }}
+                    className="w-full px-3 py-2 rounded-lg bg-[var(--color-bg-secondary)] border border-[var(--color-border)] text-sm outline-none focus:border-[var(--color-primary)] transition-colors"
+                  />
+                  <p className="text-[10px] text-[var(--color-text-tertiary)] italic">A primeira imagem será o destaque do card.</p>
                 </div>
               ) : field.type === 'number' ? (
                 <input
@@ -898,7 +974,8 @@ export default function AdminDashboard() {
     { key: 'description', label: 'Descrição curta', type: 'text' },
     { key: 'long_description', label: 'Descrição completa', type: 'textarea' },
     { key: 'category', label: 'Categoria', type: 'text' },
-    { key: 'image_url', label: 'Imagem de Destaque', type: 'file' },
+    { key: 'images', label: 'Galeria de Imagens', type: 'gallery' },
+    { key: 'image_url', label: 'Imagem de Destaque (Thumbnail Alternativo)', type: 'file' },
     { key: 'tech', label: 'Tecnologias (separadas por vírgula)', type: 'text' },
     { key: 'github_url', label: 'GitHub URL', type: 'text' },
     { key: 'demo_url', label: 'Demo URL', type: 'text' },
